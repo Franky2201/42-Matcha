@@ -1,0 +1,65 @@
+services:
+  frontend:
+    build:
+      context: ./apps/frontend
+      target: development
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - ft_network
+    restart: always
+
+  backend:
+    build:
+      context: ./apps/backend
+      target: development
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./apps/backend:/app
+    environment:
+      - ENV_STATE=development
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-matcha}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/matcha}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ft_network
+    restart: always
+
+  db:
+    container_name: matcha-db
+    image: postgres:17-alpine
+    restart: always
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-matcha}
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-matcha}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ft_network
+
+volumes:
+  postgresdata:
+
+networks:
+  ft_network:
+    driver: bridge

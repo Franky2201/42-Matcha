@@ -1,0 +1,63 @@
+services:
+  frontend:
+    build:
+      context: ./apps/frontend
+      target: production
+      args:
+        DOMAIN_NAME: ${DOMAIN_NAME:-localhost}
+    ports:
+      - "${FRONTEND_PROD_PORT:-80}:80"
+      - "${FRONTEND_PROD_SSL_PORT:-443}:443"
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+    networks:
+      - ft_network
+    restart: always
+
+  backend:
+    build:
+      context: ./apps/backend
+      target: production
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - ENV_STATE=production
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-matcha}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/matcha}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ft_network
+    restart: always
+
+  db:
+    container_name: matcha-db-prod
+    image: postgres:17-alpine
+    restart: always
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-matcha}
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-matcha}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ft_network
+
+volumes:
+  postgresdata:
+
+networks:
+  ft_network:
+    driver: bridge
