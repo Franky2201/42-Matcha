@@ -23,6 +23,7 @@ help:
 	@printf "  status         Check status of containers\n"
 	@printf "  logs           Follow container logs\n"
 	@printf "  types          Generate TypeScript interfaces from FastAPI models\n"
+	@printf "  lint           Lint both frontend (ESLint) and backend (Ruff) projects\n"
 	@printf "  clean          Remove temporary build artifacts\n"
 	@printf "  fclean         Deep clean removing node_modules, images, and volumes\n"
 	@printf "  re             Full deep clean and restart dev environment\n"
@@ -33,11 +34,11 @@ check:
 
 # Development Mode
 dev: COMPOSE := $(COMPOSE_DEV)
-dev: install-local up
+dev: install-local types up
 
 # Production Mode
 prod: COMPOSE := $(COMPOSE_PROD)
-prod: up
+prod: types up
 
 # Start services
 up: check
@@ -74,6 +75,16 @@ types: check
 	@rm -f openapi.json
 	@printf "$(GREEN)Shared types updated successfully!$(NO_COLOR)\n"
 
+lint:
+	@printf "$(GREEN)Linting frontend...$(NO_COLOR)\n"
+	@cd apps/frontend && npm run lint
+	@printf "$(GREEN)Linting backend...$(NO_COLOR)\n"
+	@if [ -d ".venv" ]; then \
+		.venv/bin/ruff check apps/backend; \
+	else \
+		ruff check apps/backend; \
+	fi
+
 clean: down
 	@printf "$(GREEN)Cleaning build artifacts...$(NO_COLOR)\n"
 	@rm -rf apps/frontend/dist
@@ -104,4 +115,4 @@ sprune: fclean
 	@printf "$(GREEN)Pruning in progress...$(NO_COLOR)\n"
 	@docker system prune --volumes -f
 
-.PHONY: all help check dev prod up down status logs types clean fclean re install-local sprune
+.PHONY: all help check dev prod up down status logs types lint clean fclean re install-local sprune
