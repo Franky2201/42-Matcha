@@ -67,7 +67,7 @@ git push origin feat/12-login-page
 1. Go to the repository on [GitHub.com](https://github.com).
 2. Click the green **"Compare & pull request"** button.
 3. Add a clear title and a brief description of your changes.
-    - ⚠️ **Important:** You must include a closing keyword in the description, such as `Closes #ID` (e.g., `Closes #12`), to automatically link and close the associated GitHub issue when the PR is merged.
+    - **Note:** You can include a closing keyword in the description, such as `Closes #ID` (e.g., `Closes #12`), to automatically link and close the associated GitHub issue when the PR is merged.
 4. Opening the PR triggers the remote **CI pipeline** (configured in `ci.yml`), which compiles the code, checks for types, runs linters, and verifies the container setup.
 
 ### 7. Merge and Cleanup
