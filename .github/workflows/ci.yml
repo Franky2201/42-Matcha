@@ -1,0 +1,109 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  # Job for the Backend (FastAPI)
+  backend:
+    name: Backend (FastAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "apps/backend/requirements.txt"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r apps/backend/requirements.txt
+
+      - name: Lint with Ruff
+        run: ruff check apps/backend
+
+      - name: Generate OpenAPI Schema
+        run: |
+          PYTHONPATH=apps/backend python -m app.generate_openapi > openapi.json
+
+      - name: Upload OpenAPI Schema
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-schema
+          path: openapi.json
+          retention-days: 1
+
+  # Job for the Frontend SPA
+  frontend:
+    name: Frontend (React/Vite)
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "apps/frontend/package-lock.json"
+
+      - name: Download OpenAPI Schema
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-schema
+          path: .
+
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
+        working-directory: apps/frontend
+
+      - name: Build Shared Types
+        run: npm run build:types
+        working-directory: apps/frontend
+
+      - name: Lint
+        run: npm run lint
+        working-directory: apps/frontend
+
+      - name: Build
+        run: npm run build
+        working-directory: apps/frontend
+
+  # Job for Docker Test with Layer Caching
+  docker-test:
+    name: Docker Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Docker Buildx for advanced caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Setup Environment
+        run: cp .env.example .env
+
+      - name: Create Data Directories
+        run: mkdir -p apps/backend/uploads
+
+      - name: Build and Start Stack
+        run: docker compose up -d --build --wait
+
+      - name: Check Container Status
+        run: docker compose ps
+
+      - name: Logs on Failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Shutdown
+        run: docker compose down -v
