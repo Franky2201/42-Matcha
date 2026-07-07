@@ -17,6 +17,7 @@ data/
 .env
 .env.*.local
 .env.local
+apps/backend/uploads/
 
 # Python files
 __pycache__/
