@@ -39,59 +39,42 @@ help:
 check:
 	@printf "$(GREEN)Running system checks...$(NO_COLOR)\n"
 	@command -v docker > /dev/null 2>&1 || (printf "$(RED)Error: Docker CLI is not installed.$(NO_COLOR)\n"; exit 1)
-	@docker info > /dev/null 2>&1 || (printf "$(RED)Error: Docker daemon is not running. Please start Docker.$(NO_COLOR)\n"; exit 1)
-	@docker compose version > /dev/null 2>&1 || (printf "$(RED)Error: docker compose command is not available. Please install Docker Compose V2.$(NO_COLOR)\n"; exit 1)
 	@test -f $(ENV_FILE) || (printf "$(GREEN)Initializing .env from .env.example...$(NO_COLOR)\n"; cp .env.example $(ENV_FILE))
 	@printf "$(GREEN)System checks passed successfully!$(NO_COLOR)\n"
 
-install-local: check
-	@printf "$(GREEN)Checking host-side build tools...$(NO_COLOR)\n"
-	@command -v node > /dev/null 2>&1 || printf "$(RED)Warning: Node.js is not installed on host. Local tools might not function properly.$(NO_COLOR)\n"
-	@command -v python3 > /dev/null 2>&1 || printf "$(RED)Warning: Python3 is not installed on host. Local virtualenv setup will fail.$(NO_COLOR)\n"
-	@printf "$(GREEN)Installing frontend dependencies locally...$(NO_COLOR)\n"
-	@cd apps/frontend && npm install --quiet --legacy-peer-deps
-	@printf "$(GREEN)Creating local Python virtual environment (.venv)...$(NO_COLOR)\n"
+apps/frontend/node_modules: apps/frontend/package.json apps/frontend/package-lock.json
+	@printf "$(GREEN)Installing frontend dependencies strictly (npm ci)...$(NO_COLOR)\n"
+	@npm --prefix apps/frontend ci --quiet --legacy-peer-deps
+	@touch apps/frontend/node_modules
+
+.venv: apps/backend/requirements.txt
+	@printf "$(GREEN)Creating/Updating local Python virtual environment...$(NO_COLOR)\n"
 	@python3 -m venv .venv || python -m venv .venv
 	@.venv/bin/pip install --quiet -r apps/backend/requirements.txt
-	@printf "$(GREEN)Local environment setup complete!$(NO_COLOR)\n"
+	@touch .venv
+
+install-local: check apps/frontend/node_modules .venv
+	@printf "$(GREEN)Local environment is up to date!$(NO_COLOR)\n"
 
 # 2. Core Tasks
-types: check
-	@printf "$(GREEN)Generating OpenAPI schema from FastAPI backend...$(NO_COLOR)\n"
+types: check install-local
+	@printf "$(GREEN)Generating OpenAPI schema directly from local venv...$(NO_COLOR)\n"
 	@mkdir -p apps/frontend/src/types
-	@# Spin up a temporary backend container to output the openapi schema to a JSON file
-	@$(COMPOSE_DEV) run --rm -T backend python -c "from app.main import app; import json; print(json.dumps(app.openapi()))" > openapi.json
-	@printf "$(GREEN)Compiling TypeScript interfaces at apps/frontend/src/types/api.ts...$(NO_COLOR)\n"
-	@if command -v npx > /dev/null 2>&1; then \
-		npx openapi-typescript openapi.json -o apps/frontend/src/types/api.ts; \
-	else \
-		printf "$(RED)npx not found on host. Falling back to Docker Node environment for compilation...$(NO_COLOR)\n"; \
-		docker run --rm -v $$(pwd):/app -w /app node:20-alpine npx openapi-typescript openapi.json -o apps/frontend/src/types/api.ts; \
-	fi
+	@PYTHONPATH=apps/backend .venv/bin/python -c "from app.main import app; import json; print(json.dumps(app.openapi()))" > openapi.json
+	@printf "$(GREEN)Compiling TypeScript interfaces...$(NO_COLOR)\n"
+	@npm --prefix apps/frontend run build:types
 	@rm -f openapi.json
 	@printf "$(GREEN)Shared types updated successfully!$(NO_COLOR)\n"
 
 lint: lint-frontend lint-backend
 
-lint-frontend:
+lint-frontend: install-local
 	@printf "$(GREEN)Linting frontend...$(NO_COLOR)\n"
-	@if [ -d "apps/frontend/node_modules" ]; then \
-		cd apps/frontend && npm run lint; \
-	else \
-		printf "$(RED)node_modules not found locally. Running frontend lint inside Docker...$(NO_COLOR)\n"; \
-		docker run --rm -v $$(pwd)/apps/frontend:/app -w /app node:20-alpine sh -c "npm ci --quiet --legacy-peer-deps && npm run lint"; \
-	fi
+	@npm --prefix apps/frontend run lint
 
-lint-backend:
+lint-backend: install-local
 	@printf "$(GREEN)Linting backend...$(NO_COLOR)\n"
-	@if [ -f ".venv/bin/ruff" ]; then \
-		.venv/bin/ruff check apps/backend; \
-	elif command -v ruff > /dev/null 2>&1; then \
-		ruff check apps/backend; \
-	else \
-		printf "$(RED)ruff not found locally. Running backend lint inside Docker...$(NO_COLOR)\n"; \
-		docker run --rm -v $$(pwd)/apps/backend:/app -w /app python:3.11-slim sh -c "pip install --quiet ruff && ruff check ."; \
-	fi
+	@.venv/bin/ruff check apps/backend
 
 # 3. Main Workflows
 dev: COMPOSE := $(COMPOSE_DEV)
@@ -102,26 +85,26 @@ prod: check types lint up
 
 ci: COMPOSE := $(COMPOSE_DEV)
 ci: check up types
-	@printf "$(GREEN)Step 3: Linting$(NO_COLOR)\n"
-	@$(COMPOSE_DEV) exec -T backend ruff check . || \
-	  (printf "$(RED)Backend linting failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1)
-	@$(COMPOSE_DEV) exec -T frontend npm run lint || \
-	  (printf "$(RED)Frontend linting failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1)
-	@printf "$(GREEN)Step 4: Testing$(NO_COLOR)\n"
-	@$(COMPOSE_DEV) exec -T backend python -m pytest . || [ $$? -eq 5 ] || \
-	  (printf "$(RED)Backend tests failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1)
-	@if $(COMPOSE_DEV) exec -T frontend npm run | grep -q "^  test$$"; then \
-		$(COMPOSE_DEV) exec -T frontend npm run test || (printf "$(RED)Frontend tests failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1); \
+	@trap '$(COMPOSE_DEV) down -v >/dev/null 2>&1' EXIT; \
+	printf "$(GREEN)Step 3: Linting$(NO_COLOR)\n"; \
+	$(COMPOSE_DEV) exec -T backend ruff check . || \
+	  (printf "$(RED)Backend linting failed.$(NO_COLOR)\n"; exit 1); \
+	$(COMPOSE_DEV) exec -T frontend npm run lint || \
+	  (printf "$(RED)Frontend linting failed.$(NO_COLOR)\n"; exit 1); \
+	printf "$(GREEN)Step 4: Testing$(NO_COLOR)\n"; \
+	$(COMPOSE_DEV) exec -T backend python -m pytest . || [ $$? -eq 5 ] || \
+	  (printf "$(RED)Backend tests failed.$(NO_COLOR)\n"; exit 1); \
+	if $(COMPOSE_DEV) exec -T frontend npm run | grep -q "^  test$$"; then \
+		$(COMPOSE_DEV) exec -T frontend npm run test || (printf "$(RED)Frontend tests failed.$(NO_COLOR)\n"; exit 1); \
 	else \
 		printf "No frontend test script found, skipping...\n"; \
-	fi
-	@printf "$(GREEN)Step 5: Building$(NO_COLOR)\n"
-	@$(COMPOSE_DEV) exec -T backend python -m compileall app || \
-	  (printf "$(RED)Backend build (compilation) failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1)
-	@$(COMPOSE_DEV) exec -T frontend npm run build || \
-	  (printf "$(RED)Frontend build failed.$(NO_COLOR)\n"; $(COMPOSE_DEV) down -v; exit 1)
-	@$(COMPOSE_DEV) down -v > /dev/null 2>&1
-	@printf "$(GREEN)--- CI Simulation Passed ---$(NO_COLOR)\n"
+	fi; \
+	printf "$(GREEN)Step 5: Building$(NO_COLOR)\n"; \
+	$(COMPOSE_DEV) exec -T backend python -m compileall app || \
+	  (printf "$(RED)Backend build (compilation) failed.$(NO_COLOR)\n"; exit 1); \
+	$(COMPOSE_DEV) exec -T frontend npm run build || \
+	  (printf "$(RED)Frontend build failed.$(NO_COLOR)\n"; exit 1); \
+	printf "$(GREEN)--- CI Simulation Passed ---$(NO_COLOR)\n"
 
 up: check
 	@printf "$(GREEN)Starting services using $(COMPOSE)...$(NO_COLOR)\n"
@@ -150,8 +133,9 @@ clean: down
 	@printf "$(GREEN)Cleanup complete.$(NO_COLOR)\n"
 
 fclean: clean
-	@printf "$(GREEN)Deep cleaning: removing node_modules, volumes, and built images...$(NO_COLOR)\n"
+	@printf "$(GREEN)Deep cleaning: removing node_modules, .venv, volumes, and built images...$(NO_COLOR)\n"
 	@rm -rf apps/frontend/node_modules
+	@rm -rf .venv
 	@$(COMPOSE_DEV) down -v --rmi all --remove-orphans
 	@$(COMPOSE_PROD) down -v --rmi all --remove-orphans
 	@printf "$(GREEN)Deep clean complete.$(NO_COLOR)\n"
