@@ -21,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class Item(BaseModel):
     id: int
     name: str
@@ -28,13 +29,20 @@ class Item(BaseModel):
     price: float
     is_offer: bool | None = None
 
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
+
 @app.get("/api/items", response_model=List[Item])
 async def get_items():
     return [
-        Item(id=1, name="Matcha Latte", price=4.5, description="Ceremonial grade matcha with oat milk"),
-        Item(id=2, name="Matcha Ice Cream", price=3.99, is_offer=True)
+        Item(
+            id=1,
+            name="Matcha Latte",
+            price=4.5,
+            description="Ceremonial grade matcha with oat milk",
+        ),
+        Item(id=2, name="Matcha Ice Cream", price=3.99, is_offer=True),
     ]
