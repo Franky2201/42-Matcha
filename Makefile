@@ -69,6 +69,7 @@ check-env:
 check-docker:
 	@command -v docker > /dev/null 2>&1 || (printf "$(RED)Error: Docker CLI is not installed.$(NO_COLOR)\n"; exit 1)
 	@docker info > /dev/null 2>&1 || (printf "$(RED)Error: Docker daemon is not running.$(NO_COLOR)\n"; exit 1)
+	@docker compose version > /dev/null 2>&1 || (printf "$(RED)Error: Docker Compose (v2 plugin) is not available.$(NO_COLOR)\n"; exit 1)
 
 check: check-env check-docker
 
@@ -198,7 +199,6 @@ prod-logs: logs
 
 ci: check
 	@trap '$(COMPOSE_DEV) down -v >/dev/null 2>&1' EXIT; \
-	set -o pipefail; \
 	printf "$(GREEN)Step 1: Starting services$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) up -d --remove-orphans --build --wait && \
 	printf "$(GREEN)Step 2: Generating types inside container$(NO_COLOR)\n" && \
