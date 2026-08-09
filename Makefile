@@ -69,6 +69,7 @@ check-env:
 check-docker:
 	@command -v docker > /dev/null 2>&1 || (printf "$(RED)Error: Docker CLI is not installed.$(NO_COLOR)\n"; exit 1)
 	@docker info > /dev/null 2>&1 || (printf "$(RED)Error: Docker daemon is not running.$(NO_COLOR)\n"; exit 1)
+	@docker compose version > /dev/null 2>&1 || (printf "$(RED)Error: Docker Compose (v2 plugin) is not available.$(NO_COLOR)\n"; exit 1)
 
 check: check-env check-docker
 
