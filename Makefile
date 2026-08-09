@@ -2,9 +2,12 @@
 # Matcha Monorepo Makefile
 # ==============================================================================
 
-COMPOSE_DEV  := docker compose -f docker-compose.yml
-COMPOSE_PROD := docker compose -f docker-compose.prod.yml
-COMPOSE      := $(COMPOSE_DEV)
+# Derive a fixed, sanitized project name so Compose resources (and prune filters) stay consistent
+PROJECT_NAME := $(shell basename $(CURDIR) | tr -d '\n' | tr 'A-Z' 'a-z' | tr -c 'a-z0-9_-' '-')
+
+COMPOSE_DEV  := docker compose -p $(PROJECT_NAME) -f docker-compose.yml
+COMPOSE_PROD := docker compose -p $(PROJECT_NAME)-prod -f docker-compose.prod.yml
+COMPOSE      ?= $(COMPOSE_DEV)
 
 GREEN    := \033[0;32m
 RED      := \033[0;31m
@@ -18,6 +21,7 @@ VENV_RUFF := .venv/bin/ruff
 # Argument extraction for add-py and add-js
 # Usage: make add-py <pkg1> [pkg2...]
 #        make add-js <pkg1> [pkg2...]
+# MUST remain at the top before target definitions to avoid recipe override warnings
 # ==============================================================================
 CMD_GOAL := $(firstword $(MAKECMDGOALS))
 ifneq ($(filter $(CMD_GOAL),add-py add-js),)
@@ -32,40 +36,28 @@ endif
 all: dev
 
 help:
-	@printf "$(GREEN)Available dev targets:$(NO_COLOR)\n"
-	@printf "  dev            Start dev environment (check -> types -> lint -> up)\n"
-	@printf "  prod           Start production environment (check -> up-fast)\n"
-	@printf "  up             Start services with --build\n"
-	@printf "  up-fast        Start services without --build\n"
+	@printf "$(GREEN)Workflows:$(NO_COLOR)\n"
+	@printf "  dev            Start dev environment (types -> format -> lint -> test -> up)\n"
+	@printf "  prod           Start production environment\n"
 	@printf "  down           Stop containers (preserves volumes)\n"
-	@printf "  status         Check status of dev containers\n"
-	@printf "  logs           Follow dev container logs\n"
-	@printf "  prod-status    Check status of prod containers\n"
-	@printf "  prod-logs      Follow prod container logs\n"
+	@printf "  status / logs  Check container status or follow logs\n"
 	@printf "\n"
 	@printf "$(GREEN)Package Management:$(NO_COLOR)\n"
-	@printf "  add-py <pkg>   Install python package(s) & append to requirements.txt\n"
+	@printf "  add-py <pkg>   Install python package(s) & update requirements.txt\n"
 	@printf "  add-js <pkg>   Install frontend npm package(s)\n"
 	@printf "\n"
-	@printf "$(GREEN)Tooling & Granular Tasks:$(NO_COLOR)\n"
+	@printf "$(GREEN)Tooling:$(NO_COLOR)\n"
 	@printf "  types          Generate TS types from FastAPI backend\n"
 	@printf "  lint           Check frontend and backend code\n"
-	@printf "  lint-backend   Lint backend code (Ruff)\n"
-	@printf "  lint-frontend  Lint frontend code (ESLint)\n"
 	@printf "  format         Auto-fix frontend and backend code\n"
-	@printf "  format-backend Auto-fix backend code (Ruff)\n"
-	@printf "  format-frontend Auto-fix frontend code (ESLint)\n"
-	@printf "  test           Run all backend & frontend tests\n"
-	@printf "  test-backend   Run pytest for backend\n"
-	@printf "  test-frontend  Run npm test for frontend\n"
+	@printf "  test           Run backend & frontend unit tests\n"
 	@printf "  build          Build backend compiled files & frontend bundle\n"
 	@printf "  ci             Simulate full CI pipeline in Docker locally\n"
 	@printf "\n"
 	@printf "$(GREEN)Cleanup:$(NO_COLOR)\n"
 	@printf "  clean          Remove build cache and temporary files\n"
 	@printf "  fclean         Deep clean (volumes, node_modules, .venv, images)\n"
-	@printf "  re             fclean -> dev\n"
-	@printf "  sprune         fclean + Docker system prune (WARNING: System-wide)\n"
+	@printf "  sprune         fclean + Docker image prune for this project\n"
 
 # ==============================================================================
 # 1. Setup & Verification
@@ -101,10 +93,9 @@ add-py: .venv
 	@if [ -z "$(PKG)" ]; then printf "$(RED)Usage: make add-py <package1> [package2...]$(NO_COLOR)\n"; exit 1; fi
 	@printf "$(GREEN)Installing $(PKG) into venv...$(NO_COLOR)\n"
 	@$(VENV_PIP) install $(PKG)
-	@for pkg in $(PKG); do \
-		grep -iq "^$$pkg\([=><~!]\|\$$\)" apps/backend/requirements.txt || echo "$$pkg" >> apps/backend/requirements.txt; \
-	done
-	@printf "$(GREEN)Done! Package(s) installed and added to requirements.txt$(NO_COLOR)\n"
+	@$(VENV_PIP) freeze > apps/backend/requirements.txt
+	@touch .venv
+	@printf "$(GREEN)Done! Package(s) installed and updated requirements.txt$(NO_COLOR)\n"
 
 add-js: apps/frontend/node_modules
 	@if [ -z "$(PKG)" ]; then printf "$(RED)Usage: make add-js <package1> [package2...]$(NO_COLOR)\n"; exit 1; fi
@@ -119,9 +110,9 @@ add-js: apps/frontend/node_modules
 types: install-local
 	@printf "$(GREEN)Generating OpenAPI schema directly from local venv...$(NO_COLOR)\n"
 	@mkdir -p apps/frontend/src/types
-	@$(RUN_PY) -c "from app.main import app; import json; open('apps/frontend/openapi.json', 'w').write(json.dumps(app.openapi()))"
+	@$(RUN_PY) -c "from app.main import app; import json; open('apps/frontend/openapi.json.tmp', 'w').write(json.dumps(app.openapi()))" && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
 	@printf "$(GREEN)Compiling TypeScript interfaces...$(NO_COLOR)\n"
-	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json; exit $$EXIT_CODE
+	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
 	@printf "$(GREEN)Shared types updated successfully!$(NO_COLOR)\n"
 
 lint: lint-backend lint-frontend
@@ -170,20 +161,16 @@ build-frontend: install-local
 # 4. Workflows & Execution (Docker)
 # ==============================================================================
 
-dev: types lint up
+dev: COMPOSE := $(COMPOSE_DEV)
+dev: types format lint test up
 
 prod: COMPOSE := $(COMPOSE_PROD)
-prod: check up-fast
+prod: check up
 
 up: check
 	@printf "$(GREEN)Starting services using $(COMPOSE)...$(NO_COLOR)\n"
 	@$(COMPOSE) up -d --remove-orphans --build --wait
 	@printf "$(GREEN)Services started successfully. Use 'make logs' or 'make down' to manage.$(NO_COLOR)\n"
-
-up-fast: check
-	@printf "$(GREEN)Starting services fast (without --build) using $(COMPOSE)...$(NO_COLOR)\n"
-	@$(COMPOSE) up -d --remove-orphans --wait
-	@printf "$(GREEN)Services started successfully.$(NO_COLOR)\n"
 
 down:
 	@printf "$(GREEN)Stopping all containers (preserving volumes)...$(NO_COLOR)\n"
@@ -197,6 +184,12 @@ status:
 logs:
 	@$(COMPOSE) logs -f
 
+dev-status: COMPOSE := $(COMPOSE_DEV)
+dev-status: status
+
+dev-logs: COMPOSE := $(COMPOSE_DEV)
+dev-logs: logs
+
 prod-status: COMPOSE := $(COMPOSE_PROD)
 prod-status: status
 
@@ -209,8 +202,9 @@ ci: check
 	printf "$(GREEN)Step 1: Starting services$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) up -d --remove-orphans --build --wait && \
 	printf "$(GREEN)Step 2: Generating types inside container$(NO_COLOR)\n" && \
-	$(COMPOSE_DEV) exec -T backend python -c "from app.main import app; import json, sys; sys.stdout.write(json.dumps(app.openapi()))" > apps/frontend/openapi.json && \
-	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json; exit $$EXIT_CODE ) && \
+	$(COMPOSE_DEV) exec -T backend python -c "from app.main import app; import json, sys; sys.stdout.write(json.dumps(app.openapi()))" > apps/frontend/openapi.json.tmp && \
+	mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json && \
+	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE ) && \
 	printf "$(GREEN)Step 3: Linting & formatting$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend ruff check . && \
 	$(COMPOSE_DEV) exec -T backend ruff format --check . && \
@@ -229,7 +223,7 @@ ci: check
 
 clean:
 	@printf "$(GREEN)Cleaning build artifacts...$(NO_COLOR)\n"
-	@rm -rf apps/frontend/dist .ruff_cache .pytest_cache .coverage apps/frontend/openapi.json
+	@rm -rf apps/frontend/dist .ruff_cache .pytest_cache .coverage apps/frontend/openapi.json apps/frontend/openapi.json.tmp
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 	@printf "$(GREEN)Cleanup complete.$(NO_COLOR)\n"
@@ -244,7 +238,9 @@ fclean: clean
 re: fclean dev
 
 sprune: fclean
-	@printf "$(GREEN)Pruning Docker system (WARNING: Affects entire system)...$(NO_COLOR)\n"
-	@docker system prune --volumes -f
+	@printf "$(GREEN)Pruning dangling images for this project only...$(NO_COLOR)\n"
+	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)"
+	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod"
+	@printf "$(GREEN)Done.$(NO_COLOR)\n"
 
-.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend build build-backend build-frontend dev prod up up-fast down status logs prod-status prod-logs ci clean fclean re sprune
+.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend build build-backend build-frontend dev prod up down status logs dev-status dev-logs prod-status prod-logs ci clean fclean re sprune
