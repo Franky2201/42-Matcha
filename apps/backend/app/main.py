@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
 
 app = FastAPI(title="Matcha API", version="1.0.0")
 
@@ -35,7 +34,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/api/items", response_model=List[Item])
+@app.get("/api/items", response_model=list[Item])
 async def get_items():
     return [
         Item(
