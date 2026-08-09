@@ -57,7 +57,7 @@ help:
 	@printf "$(GREEN)Cleanup:$(NO_COLOR)\n"
 	@printf "  clean          Remove build cache and temporary files\n"
 	@printf "  fclean         Deep clean (volumes, node_modules, .venv, images)\n"
-	@printf "  sprune         fclean + Docker image prune for this project\n"
+	@printf "  prune          fclean + Docker image prune for this project\n"
 
 # ==============================================================================
 # 1. Setup & Verification
@@ -237,10 +237,10 @@ fclean: clean
 
 re: fclean dev
 
-sprune: fclean
+prune: fclean
 	@printf "$(GREEN)Pruning dangling images for this project only...$(NO_COLOR)\n"
 	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)"
 	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod"
 	@printf "$(GREEN)Done.$(NO_COLOR)\n"
 
-.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend build build-backend build-frontend dev prod up down status logs dev-status dev-logs prod-status prod-logs ci clean fclean re sprune
+.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend build build-backend build-frontend dev prod up down status logs dev-status dev-logs prod-status prod-logs ci clean fclean re prune
