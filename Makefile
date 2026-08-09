@@ -198,7 +198,6 @@ prod-logs: logs
 
 ci: check
 	@trap '$(COMPOSE_DEV) down -v >/dev/null 2>&1' EXIT; \
-	set -o pipefail; \
 	printf "$(GREEN)Step 1: Starting services$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) up -d --remove-orphans --build --wait && \
 	printf "$(GREEN)Step 2: Generating types inside container$(NO_COLOR)\n" && \
