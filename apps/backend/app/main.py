@@ -1,17 +1,43 @@
+import os
+from contextlib import asynccontextmanager
+
+import asyncpg
+import strawberry
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+from strawberry.fastapi import GraphQLRouter
 
-app = FastAPI(title="Matcha API", version="1.0.0")
+from app.core.database import get_context
+from app.features.auth.resolver import AuthMutation
 
-# Configure CORS origins for local and container development
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://localhost",
-    "http://localhost",
 ]
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    def ping(self) -> str:
+        return "pong"
+
+@strawberry.type
+class Mutation(AuthMutation):
+    pass
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db_url = os.getenv("DATABASE_URL")
+    app.state.pool = await asyncpg.create_pool(db_url)
+    yield
+    await app.state.pool.close()
+
+app = FastAPI(lifespan=lifespan)
+
+graphql_app = GraphQLRouter(schema, context_getter=get_context)
+app.include_router(graphql_app, prefix="/graphql")
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,21 +46,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-class Item(BaseModel):
-    id: int
-    name: str
-    description: str | None = None
-    price: float
-    is_offer: bool | None = None
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@app.get("/api/items", response_model=List[Item])
-async def get_items():
-    return [
-        Item(id=1, name="Matcha Latte", price=4.5, description="Ceremonial grade matcha with oat milk"),
-        Item(id=2, name="Matcha Ice Cream", price=3.99, is_offer=True)
-    ]
