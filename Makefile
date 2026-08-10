@@ -59,7 +59,8 @@ install-local: check
 types: check
 	@printf "$(GREEN)Generating OpenAPI schema from FastAPI backend...$(NO_COLOR)\n"
 	@mkdir -p apps/frontend/src/types
-	@# Spin up a temporary backend container to output the openapi schema to a JSON file
+	@# Build backend image first so docker compose run stdout is only the OpenAPI JSON
+	@$(COMPOSE_DEV) build backend
 	@$(COMPOSE_DEV) run --rm -T backend python -c "from app.main import app; import json; print(json.dumps(app.openapi()))" > openapi.json
 	@printf "$(GREEN)Compiling TypeScript interfaces at apps/frontend/src/types/api.ts...$(NO_COLOR)\n"
 	@if command -v npx > /dev/null 2>&1; then \
