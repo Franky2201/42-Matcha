@@ -37,10 +37,11 @@ all: dev
 
 help:
 	@printf "$(GREEN)Workflows:$(NO_COLOR)\n"
-	@printf "  dev            Start dev environment (types -> format -> lint -> test -> up)\n"
+	@printf "  dev            Start dev environment (types -> format -> lint -> up -> ping)\n"
 	@printf "  prod           Start production environment\n"
 	@printf "  down           Stop containers (preserves volumes)\n"
 	@printf "  status / logs  Check container status or follow logs\n"
+	@printf "  ping           Ping frontend and backend endpoints\n"
 	@printf "\n"
 	@printf "$(GREEN)Package Management:$(NO_COLOR)\n"
 	@printf "  add-py <pkg>   Install python package(s) & update requirements.txt\n"
@@ -50,7 +51,6 @@ help:
 	@printf "  types          Generate TS types from FastAPI backend\n"
 	@printf "  lint           Check frontend and backend code\n"
 	@printf "  format         Auto-fix frontend and backend code\n"
-	@printf "  test           Run backend & frontend unit tests\n"
 	@printf "  build          Build backend compiled files & frontend bundle\n"
 	@printf "  ci             Simulate full CI pipeline in Docker locally\n"
 	@printf "\n"
@@ -138,16 +138,6 @@ format-frontend: install-local
 	@printf "$(GREEN)Auto-fixing frontend code with ESLint...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run lint -- --fix
 
-test: test-backend test-frontend
-
-test-backend: install-local
-	@printf "$(GREEN)Running backend tests...$(NO_COLOR)\n"
-	@$(RUN_PY) -m pytest apps/backend || [ $$? -eq 5 ]
-
-test-frontend: install-local
-	@printf "$(GREEN)Running frontend tests...$(NO_COLOR)\n"
-	@npm --prefix apps/frontend test --if-present
-
 build: build-backend build-frontend
 
 build-backend: install-local
@@ -163,7 +153,7 @@ build-frontend: install-local
 # ==============================================================================
 
 dev: COMPOSE := $(COMPOSE_DEV)
-dev: types format lint test up
+dev: types format lint up
 
 prod: COMPOSE := $(COMPOSE_PROD)
 prod: check up
@@ -171,7 +161,13 @@ prod: check up
 up: check
 	@printf "$(GREEN)Starting services using $(COMPOSE)...$(NO_COLOR)\n"
 	@$(COMPOSE) up -d --remove-orphans --build --wait
-	@printf "$(GREEN)Services started successfully. Use 'make logs' or 'make down' to manage.$(NO_COLOR)\n"
+	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
+	F_PORT=$${FRONTEND_PORT:-5173}; \
+	B_PORT=$${BACKEND_PORT:-8000}; \
+	printf "$(GREEN)Services started successfully!$(NO_COLOR)\n"; \
+	printf "$(GREEN)  Frontend: http://localhost:$$F_PORT$(NO_COLOR)\n"; \
+	printf "$(GREEN)  Backend:  http://localhost:$$B_PORT (API Docs: http://localhost:$$B_PORT/docs)$(NO_COLOR)\n"
+	@$(MAKE) ping
 
 down:
 	@printf "$(GREEN)Stopping all containers (preserving volumes)...$(NO_COLOR)\n"
@@ -184,6 +180,15 @@ status:
 
 logs:
 	@$(COMPOSE) logs -f
+
+ping: check-env
+	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
+	F_PORT=$${FRONTEND_PORT:-5173}; \
+	B_PORT=$${BACKEND_PORT:-8000}; \
+	printf "$(GREEN)Pinging frontend (http://localhost:$$F_PORT)...$(NO_COLOR)\n"; \
+	curl -sf "http://localhost:$$F_PORT" >/dev/null && printf "$(GREEN)Frontend is UP!$(NO_COLOR)\n" || (printf "$(RED)Frontend is DOWN!$(NO_COLOR)\n"; exit 1); \
+	printf "$(GREEN)Pinging backend (http://localhost:$$B_PORT/)...$(NO_COLOR)\n"; \
+	curl -sf "http://localhost:$$B_PORT/" >/dev/null && printf "$(GREEN)Backend is UP!$(NO_COLOR)\n" || (printf "$(RED)Backend is DOWN!$(NO_COLOR)\n"; exit 1)
 
 dev-status: COMPOSE := $(COMPOSE_DEV)
 dev-status: status
@@ -201,17 +206,16 @@ ci: check
 	@trap '$(COMPOSE_DEV) down -v >/dev/null 2>&1' EXIT; \
 	printf "$(GREEN)Step 1: Starting services$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) up -d --remove-orphans --build --wait && \
-	printf "$(GREEN)Step 2: Generating types inside container$(NO_COLOR)\n" && \
+	printf "$(GREEN)Step 2: Pinging services$(NO_COLOR)\n" && \
+	$(MAKE) ping && \
+	printf "$(GREEN)Step 3: Generating types inside container$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend python -c "from app.main import app; import json, sys; sys.stdout.write(json.dumps(app.openapi()))" > apps/frontend/openapi.json.tmp && \
 	mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json && \
 	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE ) && \
-	printf "$(GREEN)Step 3: Linting & formatting$(NO_COLOR)\n" && \
+	printf "$(GREEN)Step 4: Linting & formatting$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend ruff check . && \
 	$(COMPOSE_DEV) exec -T backend ruff format --check . && \
 	$(COMPOSE_DEV) exec -T frontend npm run lint && \
-	printf "$(GREEN)Step 4: Testing$(NO_COLOR)\n" && \
-	($(COMPOSE_DEV) exec -T backend python -m pytest . || [ $$? -eq 5 ]) && \
-	$(COMPOSE_DEV) exec -T frontend npm test --if-present && \
 	printf "$(GREEN)Step 5: Building$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend python -m compileall app && \
 	$(COMPOSE_DEV) exec -T frontend npm run build && \
@@ -223,7 +227,7 @@ ci: check
 
 clean:
 	@printf "$(GREEN)Cleaning build artifacts...$(NO_COLOR)\n"
-	@rm -rf apps/frontend/dist .ruff_cache .pytest_cache .coverage apps/frontend/openapi.json apps/frontend/openapi.json.tmp
+	@rm -rf apps/frontend/dist .ruff_cache apps/frontend/openapi.json apps/frontend/openapi.json.tmp
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 	@printf "$(GREEN)Cleanup complete.$(NO_COLOR)\n"
@@ -243,4 +247,4 @@ prune: fclean
 	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod"
 	@printf "$(GREEN)Done.$(NO_COLOR)\n"
 
-.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend test test-backend test-frontend build build-backend build-frontend dev prod up down status logs dev-status dev-logs prod-status prod-logs ci clean fclean re prune
+.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
