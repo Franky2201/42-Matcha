@@ -37,7 +37,7 @@ Work on your code. Before committing or pushing, run the CI validation locally t
 ```bash
 make ci
 ```
-*This command runs the entire pipeline (build, types compilation, ping verification, linting, production builds) inside isolated Docker containers, guaranteeing identical results to the remote GitHub Actions environment.*
+*This command runs a mock pipeline (build, types compilation, ping verification, linting, production builds) inside isolated Docker containers. This target doesn't replace the full ci pipeline and solely exists to prevent unnecessary PR runs*
 
 ### 4. Stay Synced
 
