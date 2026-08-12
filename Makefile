@@ -15,11 +15,11 @@ NO_COLOR   := \033[0m
 
 # Terminal hyperlink helpers (OSC 8 specification)
 LINK_START := \033]8;;
-LINK_MID   := \033\#
-LINK_CLOSE := \033]8;;\033\#
+LINK_MID   := \033\ 
+LINK_CLOSE := \033]8;;\033\ 
 
-RUN_PY   := set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; PYTHONPATH=apps/backend .venv/bin/python
-VENV_PIP := .venv/bin/pip
+RUN_PY    := set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; PYTHONPATH=apps/backend .venv/bin/python
+VENV_PIP  := .venv/bin/pip
 VENV_RUFF := .venv/bin/ruff
 
 # ==============================================================================
@@ -62,14 +62,14 @@ help:
 	@printf "$(GREEN)Cleanup:$(NO_COLOR)\n"
 	@printf "  clean          Remove build cache and temporary files\n"
 	@printf "  fclean         Deep clean (volumes, node_modules, .venv, images)\n"
-	@printf "  prune          fclean + Docker image prune for this project\n"
+	@printf "  prune          fclean + Docker image & volume prune for this project\n"
 
 # ==============================================================================
 # 1. Setup & Verification
 # ==============================================================================
 
 check-env:
-	@test -f .env || ([ -f .env.example ] && (printf "$(GREEN)Initializing .env from .env.example...$(NO_COLOR)\n"; cp .env.example .env) || (printf "$(RED)Error: Neither .env nor .env.example exists.$(NO_COLOR)\n"; exit 1))
+	@test -f .env || ([ -f .env.example ] && cp .env.example .env || (printf "$(RED)Error: Neither .env nor .env.example exists.$(NO_COLOR)\n"; exit 1))
 
 check-docker:
 	@command -v docker > /dev/null 2>&1 || (printf "$(RED)Error: Docker CLI is not installed.$(NO_COLOR)\n"; exit 1)
@@ -79,12 +79,10 @@ check-docker:
 check: check-env check-docker
 
 apps/frontend/node_modules: apps/frontend/package.json $(wildcard apps/frontend/package-lock.json)
-	@printf "$(GREEN)Installing frontend dependencies (npm ci)...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend ci --quiet --legacy-peer-deps
 	@touch apps/frontend/node_modules
 
 .venv: apps/backend/requirements.txt
-	@printf "$(GREEN)Creating/Updating local Python virtual environment...$(NO_COLOR)\n"
 	@python3 -m venv .venv || python -m venv .venv
 	@$(VENV_PIP) install --quiet -r apps/backend/requirements.txt
 	@touch .venv
@@ -97,65 +95,47 @@ install-local: check-env apps/frontend/node_modules .venv
 
 add-py: .venv
 	@if [ -z "$(PKG)" ]; then printf "$(RED)Usage: make add-py <package1> [package2...]$(NO_COLOR)\n"; exit 1; fi
-	@printf "$(GREEN)Installing $(PKG) into venv...$(NO_COLOR)\n"
 	@$(VENV_PIP) install $(PKG)
 	@$(VENV_PIP) freeze > apps/backend/requirements.txt
 	@touch .venv
-	@printf "$(GREEN)Done! Package(s) installed and updated requirements.txt$(NO_COLOR)\n"
 
 add-js: apps/frontend/node_modules
 	@if [ -z "$(PKG)" ]; then printf "$(RED)Usage: make add-js <package1> [package2...]$(NO_COLOR)\n"; exit 1; fi
-	@printf "$(GREEN)Installing $(PKG) into frontend...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend install $(PKG)
-	@printf "$(GREEN)Done! package.json updated.$(NO_COLOR)\n"
 
 # ==============================================================================
 # 3. Code Quality & Types
 # ==============================================================================
 
-apps/frontend/src/types/api.ts: apps/frontend/node_modules .venv $(shell find apps/backend/app -type f 2>/dev/null)
-	@printf "$(GREEN)Generating OpenAPI schema directly from local venv...$(NO_COLOR)\n"
+types: install-local
 	@mkdir -p apps/frontend/src/types
 	@$(RUN_PY) -c "from app.main import app; import json; open('apps/frontend/openapi.json.tmp', 'w').write(json.dumps(app.openapi()))" && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
-	@printf "$(GREEN)Compiling TypeScript interfaces...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
-	@printf "$(GREEN)Shared types updated successfully!$(NO_COLOR)\n"
-
-types: apps/frontend/src/types/api.ts
 
 lint: lint-backend lint-frontend
 
 lint-backend: install-local
-	@printf "$(GREEN)Linting and checking format for backend...$(NO_COLOR)\n"
 	@$(VENV_RUFF) check apps/backend
 	@$(VENV_RUFF) format --check apps/backend
 
 lint-frontend: install-local
-	@printf "$(GREEN)Linting frontend...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run lint
 
 format: format-backend format-frontend
 
 format-backend: install-local
-	@printf "$(GREEN)Formatting and auto-fixing backend code with Ruff...$(NO_COLOR)\n"
 	@$(VENV_RUFF) check --fix apps/backend
 	@$(VENV_RUFF) format apps/backend
 
 format-frontend: install-local
-	@printf "$(GREEN)Auto-fixing frontend code with ESLint...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run lint -- --fix
 
 build: build-backend build-frontend
 
-.build-backend: .venv $(shell find apps/backend/app -name "*.py" 2>/dev/null)
-	@printf "$(GREEN)Compiling backend Python code...$(NO_COLOR)\n"
+build-backend: install-local
 	@$(RUN_PY) -m compileall apps/backend/app
-	@touch .build-backend
 
-build-backend: .build-backend
-
-apps/frontend/dist: apps/frontend/node_modules apps/frontend/src/types/api.ts $(shell find apps/frontend/src -type f 2>/dev/null) apps/frontend/package.json
-	@printf "$(GREEN)Building frontend dist bundle...$(NO_COLOR)\n"
+apps/frontend/dist: apps/frontend/node_modules apps/frontend/package.json
 	@npm --prefix apps/frontend run build
 
 build-frontend: apps/frontend/dist
@@ -171,8 +151,7 @@ prod: COMPOSE := $(COMPOSE_PROD)
 prod: check up
 
 up: check
-	@printf "$(GREEN)Starting services using $(COMPOSE)...$(NO_COLOR)\n"
-	@$(COMPOSE) up -d --remove-orphans --wait
+	@$(COMPOSE) up -d --remove-orphans --build --wait
 	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
@@ -182,10 +161,8 @@ up: check
 	@$(MAKE) ping
 
 down:
-	@printf "$(GREEN)Stopping all containers (preserving volumes)...$(NO_COLOR)\n"
 	@$(COMPOSE_DEV) down --remove-orphans 2>/dev/null || true
 	@$(COMPOSE_PROD) down --remove-orphans 2>/dev/null || true
-	@printf "$(GREEN)Containers stopped successfully.$(NO_COLOR)\n"
 
 status:
 	@$(COMPOSE) ps
@@ -194,12 +171,10 @@ logs:
 	@$(COMPOSE) logs -f
 
 ping: check-env
-	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
+	set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
-	printf "$(GREEN)Pinging frontend (http://localhost:$$F_PORT)...$(NO_COLOR)\n"; \
 	curl -sf "http://localhost:$$F_PORT" >/dev/null && printf "$(GREEN)Frontend is UP!$(NO_COLOR)\n" || (printf "$(RED)Frontend is DOWN!$(NO_COLOR)\n"; exit 1); \
-	printf "$(GREEN)Pinging backend (http://localhost:$$B_PORT/)...$(NO_COLOR)\n"; \
 	curl -sf "http://localhost:$$B_PORT/" >/dev/null && printf "$(GREEN)Backend is UP!$(NO_COLOR)\n" || (printf "$(RED)Backend is DOWN!$(NO_COLOR)\n"; exit 1)
 
 dev-status: COMPOSE := $(COMPOSE_DEV)
@@ -238,25 +213,22 @@ ci: check
 # ==============================================================================
 
 clean:
-	@printf "$(GREEN)Cleaning build artifacts...$(NO_COLOR)\n"
-	@rm -rf apps/frontend/dist .ruff_cache .build-backend apps/frontend/openapi.json apps/frontend/openapi.json.tmp
+	@rm -rf apps/frontend/dist .ruff_cache .build-backend .format-stamp .lint-stamp .up-stamp .dev-stamp apps/frontend/openapi.json apps/frontend/openapi.json.tmp
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
-	@printf "$(GREEN)Cleanup complete.$(NO_COLOR)\n"
 
 fclean: clean
-	@printf "$(GREEN)Deep cleaning: removing node_modules, .venv, volumes, and built images...$(NO_COLOR)\n"
 	@rm -rf apps/frontend/node_modules .venv
 	@$(COMPOSE_DEV) down -v --rmi all --remove-orphans 2>/dev/null || true
 	@$(COMPOSE_PROD) down -v --rmi all --remove-orphans 2>/dev/null || true
-	@printf "$(GREEN)Deep clean complete.$(NO_COLOR)\n"
 
 re: fclean dev
 
 prune: fclean
-	@printf "$(GREEN)Pruning dangling images for this project only...$(NO_COLOR)\n"
-	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)"
-	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod"
-	@printf "$(GREEN)Done.$(NO_COLOR)\n"
+	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)" >/dev/null 2>&1 || true
+	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod" >/dev/null 2>&1 || true
+	@docker volume prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)" >/dev/null 2>&1 || true
+	@docker volume prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod" >/dev/null 2>&1 || true
+	printf "$(GREEN)Project scoped resources pruned$(NO_COLOR)\n"
 
 .PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
