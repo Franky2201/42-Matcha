@@ -9,9 +9,14 @@ COMPOSE_DEV  := docker compose -p $(PROJECT_NAME) -f docker-compose.yml
 COMPOSE_PROD := docker compose -p $(PROJECT_NAME)-prod -f docker-compose.prod.yml
 COMPOSE      ?= $(COMPOSE_DEV)
 
-GREEN    := \033[0;32m
-RED      := \033[0;31m
-NO_COLOR := \033[0m
+GREEN      := \033[0;32m
+RED        := \033[0;31m
+NO_COLOR   := \033[0m
+
+# Terminal hyperlink helpers (OSC 8 specification)
+LINK_START := \033]8;;
+LINK_MID   := \033\#
+LINK_CLOSE := \033]8;;\033\#
 
 RUN_PY   := set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; PYTHONPATH=apps/backend .venv/bin/python
 VENV_PIP := .venv/bin/pip
@@ -108,13 +113,15 @@ add-js: apps/frontend/node_modules
 # 3. Code Quality & Types
 # ==============================================================================
 
-types: install-local
+apps/frontend/src/types/api.ts: apps/frontend/node_modules .venv $(shell find apps/backend/app -type f 2>/dev/null)
 	@printf "$(GREEN)Generating OpenAPI schema directly from local venv...$(NO_COLOR)\n"
 	@mkdir -p apps/frontend/src/types
 	@$(RUN_PY) -c "from app.main import app; import json; open('apps/frontend/openapi.json.tmp', 'w').write(json.dumps(app.openapi()))" && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
 	@printf "$(GREEN)Compiling TypeScript interfaces...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
 	@printf "$(GREEN)Shared types updated successfully!$(NO_COLOR)\n"
+
+types: apps/frontend/src/types/api.ts
 
 lint: lint-backend lint-frontend
 
@@ -140,13 +147,18 @@ format-frontend: install-local
 
 build: build-backend build-frontend
 
-build-backend: install-local
+.build-backend: .venv $(shell find apps/backend/app -name "*.py" 2>/dev/null)
 	@printf "$(GREEN)Compiling backend Python code...$(NO_COLOR)\n"
 	@$(RUN_PY) -m compileall apps/backend/app
+	@touch .build-backend
 
-build-frontend: install-local
+build-backend: .build-backend
+
+apps/frontend/dist: apps/frontend/node_modules apps/frontend/src/types/api.ts $(shell find apps/frontend/src -type f 2>/dev/null) apps/frontend/package.json
 	@printf "$(GREEN)Building frontend dist bundle...$(NO_COLOR)\n"
 	@npm --prefix apps/frontend run build
+
+build-frontend: apps/frontend/dist
 
 # ==============================================================================
 # 4. Workflows & Execution (Docker)
@@ -160,13 +172,13 @@ prod: check up
 
 up: check
 	@printf "$(GREEN)Starting services using $(COMPOSE)...$(NO_COLOR)\n"
-	@$(COMPOSE) up -d --remove-orphans --build --wait
+	@$(COMPOSE) up -d --remove-orphans --wait
 	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
 	printf "$(GREEN)Services started successfully!$(NO_COLOR)\n"; \
-	printf "$(GREEN)  Frontend: http://localhost:$$F_PORT$(NO_COLOR)\n"; \
-	printf "$(GREEN)  Backend:  http://localhost:$$B_PORT (API Docs: http://localhost:$$B_PORT/docs)$(NO_COLOR)\n"
+	printf "$(GREEN)  Frontend: $(LINK_START)http://localhost:$$F_PORT$(LINK_MID)http://localhost:$$F_PORT$(LINK_CLOSE)$(NO_COLOR)\n"; \
+	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (API Docs: $(LINK_START)http://localhost:$$B_PORT/docs$(LINK_MID)http://localhost:$$B_PORT/docs$(LINK_CLOSE))$(NO_COLOR)\n"
 	@$(MAKE) ping
 
 down:
@@ -227,7 +239,7 @@ ci: check
 
 clean:
 	@printf "$(GREEN)Cleaning build artifacts...$(NO_COLOR)\n"
-	@rm -rf apps/frontend/dist .ruff_cache apps/frontend/openapi.json apps/frontend/openapi.json.tmp
+	@rm -rf apps/frontend/dist .ruff_cache .build-backend apps/frontend/openapi.json apps/frontend/openapi.json.tmp
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 	@printf "$(GREEN)Cleanup complete.$(NO_COLOR)\n"
