@@ -218,9 +218,9 @@ clean:
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 
 fclean: clean
-	@rm -rf apps/frontend/node_modules .venv
 	@$(COMPOSE_DEV) down -v --rmi all --remove-orphans 2>/dev/null || true
 	@$(COMPOSE_PROD) down -v --rmi all --remove-orphans 2>/dev/null || true
+	@rm -rf apps/frontend/node_modules .venv
 
 re: fclean dev
 
@@ -229,6 +229,6 @@ prune: fclean
 	@docker image prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod" >/dev/null 2>&1 || true
 	@docker volume prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)" >/dev/null 2>&1 || true
 	@docker volume prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod" >/dev/null 2>&1 || true
-	printf "$(GREEN)Project scoped resources pruned$(NO_COLOR)\n"
+	@printf "$(GREEN)Project scoped resources pruned$(NO_COLOR)\n"
 
 .PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
