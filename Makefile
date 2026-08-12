@@ -15,8 +15,8 @@ NO_COLOR   := \033[0m
 
 # Terminal hyperlink helpers (OSC 8 specification)
 LINK_START := \033]8;;
-LINK_MID   := \033\ 
-LINK_CLOSE := \033]8;;\033\ 
+LINK_MID   := \033\\
+LINK_CLOSE := \033]8;;\033\\
 
 RUN_PY    := set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; PYTHONPATH=apps/backend .venv/bin/python
 VENV_PIP  := .venv/bin/pip
@@ -156,8 +156,8 @@ up: check
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
 	printf "$(GREEN)Services started successfully!$(NO_COLOR)\n"; \
-	printf "$(GREEN)  Frontend: $(LINK_START)http://localhost:$$F_PORT$(LINK_MID)http://localhost:$$F_PORT$(LINK_CLOSE)$(NO_COLOR)\n"; \
-	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (API Docs: $(LINK_START)http://localhost:$$B_PORT/docs$(LINK_MID)http://localhost:$$B_PORT/docs$(LINK_CLOSE))$(NO_COLOR)\n"
+	printf "$(GREEN)  Frontend: $(LINK_START)http://localhost:$$F_PORT$(LINK_MID)http://localhost:$$F_PORT$(LINK_CLOSE) $(NO_COLOR)\n"; \
+	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (API Docs: $(LINK_START)http://localhost:$$B_PORT/docs$(LINK_MID)http://localhost:$$B_PORT/docs$(LINK_CLOSE) )$(NO_COLOR)\n"
 	@$(MAKE) ping
 
 down:
@@ -171,7 +171,7 @@ logs:
 	@$(COMPOSE) logs -f
 
 ping: check-env
-	set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
+	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
 	curl -sf "http://localhost:$$F_PORT" >/dev/null && printf "$(GREEN)Frontend is UP!$(NO_COLOR)\n" || (printf "$(RED)Frontend is DOWN!$(NO_COLOR)\n"; exit 1); \
