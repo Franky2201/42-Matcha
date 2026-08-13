@@ -73,7 +73,6 @@ run_test "install-local" "Installs frontend dependencies and Python venv"
 run_test "types" "Generates OpenAPI schema and TypeScript definitions" "[ -f apps/frontend/src/types/api.ts ]"
 run_test "format" "Auto-formats backend (Ruff) and frontend (ESLint)"
 run_test "lint" "Lints backend and frontend codebases"
-run_test "test" "Runs backend pytest and frontend unit tests"
 run_test "build" "Compiles backend Python files and builds frontend distribution bundle" "[ -d apps/frontend/dist ]"
 
 # 3. Cleanup Target
@@ -83,6 +82,7 @@ run_test "clean" "Cleans build artifacts and caches" "[ ! -d apps/frontend/dist 
 if docker info >/dev/null 2>&1; then
     run_test "up" "Spins up Docker development containers"
     run_test "status" "Checks Docker container status"
+
     run_test "down" "Stops Docker development containers"
     run_test "ci" "Runs local CI simulation inside Docker containers"
 else

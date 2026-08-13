@@ -11,6 +11,7 @@ dist-ssr/
 *.tsbuildinfo
 out/
 .next/
+.build-backend
 
 # Docker & Persistence
 data/
@@ -66,3 +67,4 @@ coverage/
 
 # AI tools
 .antigravitycli/
+.agents/
