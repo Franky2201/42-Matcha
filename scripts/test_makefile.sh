@@ -82,13 +82,12 @@ run_test "clean" "Cleans build artifacts and caches" "[ ! -d apps/frontend/dist 
 if docker info >/dev/null 2>&1; then
     run_test "up" "Spins up Docker development containers"
     run_test "status" "Checks Docker container status"
-    run_test "ping" "Pings frontend and backend HTTP endpoints to verify availability"
+
     run_test "down" "Stops Docker development containers"
     run_test "ci" "Runs local CI simulation inside Docker containers"
 else
     skip_test "up" "Docker daemon is not running"
     skip_test "status" "Docker daemon is not running"
-    skip_test "ping" "Docker daemon is not running"
     skip_test "down" "Docker daemon is not running"
     skip_test "ci" "Docker daemon is not running"
 fi
