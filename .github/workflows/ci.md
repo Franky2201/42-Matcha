@@ -33,15 +33,11 @@ git checkout -b fix/45-chat-websocket-crash
 
 ### 3. Development & Testing
 
-Work on your code. If writing tests:
-- Use **`pytest`** for backend tests (located under `apps/backend`).
-- Write tests using a Vite-compatible testing framework (like Vitest) if added in the future for the frontend.
-
-Before committing or pushing, run the CI validation locally to catch linting, build, or runtime errors early:
+Work on your code. Before committing or pushing, run the CI validation locally to catch linting, type compilation, build, or runtime errors early:
 ```bash
 make ci
 ```
-*This command runs the entire pipeline (build, types compilation, linting, tests, production builds) inside isolated Docker containers, guaranteeing identical results to the remote GitHub Actions environment.*
+*This command runs a mock pipeline (build, types compilation, ping verification, linting, production builds) inside isolated Docker containers. This target doesn't replace the full ci pipeline and solely exists to prevent unnecessary PR runs*
 
 ### 4. Stay Synced
 

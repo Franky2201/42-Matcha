@@ -11,6 +11,7 @@ dist-ssr/
 *.tsbuildinfo
 out/
 .next/
+.build-backend
 
 # Docker & Persistence
 data/
@@ -59,3 +60,11 @@ coverage/
 .eslintcache
 .parcel-cache
 .stylelintcache
+.pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+**/.ruff_cache/
+
+# AI tools
+.antigravitycli/
+.agents/

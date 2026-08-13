@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+    --color-grey: #cacaca;
+    --color-red: #ff9191;
+    --color-orange: #ffc780;
+    --color-yellow: #f7f08c;
+    --color-green: #b4db8f;
+    --color-blue: #6dd8fe;
+    --color-purple: #d791ff;
+    --color-pink: #ffbfff;
+    --color-violet: #a9a3ff;
+    --color-white: #f0f0f0;
+    --color-github: #101411;
+    --color-black: #000000;
+}
+
+.font-mona-sans-light {
+    font-family: "Mona Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.font-mona-sans {
+    font-family: "Mona Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.font-mona-sans-title {
+    font-family: "Mona Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 900;
+    font-style: normal;
+}
