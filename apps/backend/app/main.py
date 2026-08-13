@@ -3,12 +3,12 @@ from contextlib import asynccontextmanager
 
 import asyncpg
 import strawberry
+from app.core.database import get_context
+from app.features.auth.resolver import AuthMutation
+from app.features.users.resolver import UserMutation, UserQuery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
-
-from app.core.database import get_context
-from app.features.auth.resolver import AuthMutation
 
 origins = [
     "http://localhost:5173",
@@ -16,13 +16,13 @@ origins = [
 ]
 
 @strawberry.type
-class Query:
+class Query(UserQuery):
     @strawberry.field
     def ping(self) -> str:
         return "pong"
 
 @strawberry.type
-class Mutation(AuthMutation):
+class Mutation(AuthMutation, UserMutation):
     pass
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
