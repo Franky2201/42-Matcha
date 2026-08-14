@@ -1,5 +1,10 @@
 import asyncpg
-from app.core.security import get_current_user_id, get_password_hash
+from app.core.mailer import send_verification_email
+from app.core.security import (
+    create_email_verification_token,
+    get_current_user_id,
+    get_password_hash,
+)
 from app.features.users.repository import create_user_in_db, get_user_by_id
 from app.features.users.schemas import User, UserPayload
 from fastapi import Request
@@ -19,8 +24,11 @@ async def register_user(
     if not user_record:
         return UserPayload(user=None, message="Username or email already exists.")
 
+    token = create_email_verification_token(email)
+    await send_verification_email(email, token)
+
     user = User(**user_record)
-    return UserPayload(user=user, message="Registration successful")
+    return UserPayload(user=user, message="Registration successful. Please check your emails.")
 
 async def get_me(pool: asyncpg.Pool, request: Request) -> User | None:
     user_id = get_current_user_id(request)

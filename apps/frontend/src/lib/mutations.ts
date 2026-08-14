@@ -1,6 +1,7 @@
 import { gql, type TypedDocumentNode } from '@apollo/client';
 import type { LoginMutationData, LoginMutationVariables, RegisterMutationData, RegisterMutationVariables } from '../types/auth';
 import type { ForgotPasswordMutationData, ForgotPasswordMutationVariables } from '../types/users';
+import type { VerifyEmailMutationData, VerifyEmailMutationVariables } from '../types/users';
 
 export const LOGIN_MUTATION: TypedDocumentNode<LoginMutationData, LoginMutationVariables> = gql`
   mutation Login($username: String!, $password: String!) {
@@ -25,5 +26,11 @@ export const REGISTER_MUTATION: TypedDocumentNode<RegisterMutationData, Register
 export const FORGOT_PASSWORD_MUTATION: TypedDocumentNode<ForgotPasswordMutationData, ForgotPasswordMutationVariables> = gql`
   mutation RequestPasswordReset($email: String!) {
     requestPasswordReset(email: $email)
+  }
+`;
+
+export const VERIFY_EMAIL_MUTATION: TypedDocumentNode<VerifyEmailMutationData, VerifyEmailMutationVariables> = gql`
+  mutation VerifyEmail($token: String!) {
+    verifyEmail(token: $token)
   }
 `;

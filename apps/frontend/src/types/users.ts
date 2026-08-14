@@ -25,6 +25,14 @@ export interface ForgotPasswordMutationVariables {
     email: string;
 }
 
+export interface VerifyEmailMutationData {
+    verifyEmail: string;
+}
+
+export interface VerifyEmailMutationVariables {
+    token: string;
+}
+
 export interface MeQueryData {
     me: User | null;
 }

@@ -4,6 +4,7 @@ import Login from "./page/Login";
 import Register from "./page/Register";
 import RootWrapper from "./components/RootWrapper";
 import ForgotPassword from "./page/ForgotPassword";
+import VerifyEmail from "./page/VerifyEmail";
 
 export const router = createBrowserRouter([
     {
@@ -21,6 +22,10 @@ export const router = createBrowserRouter([
             {
                 path: "register",
                 element: <Register />,
+            },
+            {
+                path: "verify-email",
+                element: <VerifyEmail />
             },
             {
                 path: "forgot-password",
