@@ -4,8 +4,9 @@ CREATE TYPE user_preference AS ENUM ('all', 'male', 'female');
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    last_name VARCHAR(100),
-    first_name VARCHAR(100),
+    username VARCHAR(255) UNIQUE NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     gender user_gender,
@@ -22,10 +23,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (email, password_hash, first_name, last_name)
+INSERT INTO users (email, username, lastname, firstname, password_hash)
 VALUES (
-    'test@matcha.com',
-    '$2a$12$lxcIPF4h7s6TPz7yYlMPXO4Q0mmMJWU/phxw/bkyqJEfuZk/mnuSa',
-    'Test',
-    'User'
+    'juhanse@matcha.com',
+    'juhanse',
+    'Hanse',
+    'Julien',
+    '$2a$12$lxcIPF4h7s6TPz7yYlMPXO4Q0mmMJWU/phxw/bkyqJEfuZk/mnuSa'
 ) ON CONFLICT (email) DO NOTHING;
