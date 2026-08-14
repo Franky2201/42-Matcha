@@ -174,8 +174,29 @@ ping: check-env
 	@set -a; [ -f .env ] && . ./.env 2>/dev/null; set +a; \
 	F_PORT=$${FRONTEND_PORT:-5173}; \
 	B_PORT=$${BACKEND_PORT:-8000}; \
-	curl -sf "http://localhost:$$F_PORT" >/dev/null && printf "$(GREEN)Frontend is UP!$(NO_COLOR)\n" || (printf "$(RED)Frontend is DOWN!$(NO_COLOR)\n"; exit 1); \
-	curl -sf "http://localhost:$$B_PORT/" >/dev/null && printf "$(GREEN)Backend is UP!$(NO_COLOR)\n" || (printf "$(RED)Backend is DOWN!$(NO_COLOR)\n"; exit 1)
+	MAX_RETRIES=10; \
+	COUNT=1; \
+	while ! curl -sf "http://localhost:$$F_PORT" >/dev/null 2>&1; do \
+		if [ $$COUNT -ge $$MAX_RETRIES ]; then \
+			printf "$(RED)Frontend is DOWN!$(NO_COLOR)\n"; \
+			exit 1; \
+		fi; \
+		printf "Waiting for frontend... (%s/%s)\n" "$$COUNT" "$$MAX_RETRIES"; \
+		sleep 1; \
+		COUNT=$$((COUNT + 1)); \
+	done; \
+	printf "$(GREEN)Frontend is UP!$(NO_COLOR)\n"; \
+	COUNT=1; \
+	while ! curl -sf "http://localhost:$$B_PORT/" >/dev/null 2>&1; do \
+		if [ $$COUNT -ge $$MAX_RETRIES ]; then \
+			printf "$(RED)Backend is DOWN!$(NO_COLOR)\n"; \
+			exit 1; \
+		fi; \
+		printf "Waiting for backend... (%s/%s)\n" "$$COUNT" "$$MAX_RETRIES"; \
+		sleep 1; \
+		COUNT=$$((COUNT + 1)); \
+	done; \
+	printf "$(GREEN)Backend is UP!$(NO_COLOR)\n"
 
 dev-status: COMPOSE := $(COMPOSE_DEV)
 dev-status: status
