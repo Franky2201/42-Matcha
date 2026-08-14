@@ -1,16 +1,26 @@
 import strawberry
+from strawberry.types import Info
+
 from app.features.users.schemas import User, UserPayload
 from app.features.users.service import get_me, register_user
-from strawberry.types import Info
 
 
 @strawberry.type
 class UserMutation:
     @strawberry.mutation
     async def register(
-        self, info: Info, email: str, username: str, firstname: str, lastname: str, password: str
+        self,
+        info: Info,
+        email: str,
+        username: str,
+        firstname: str,
+        lastname: str,
+        password: str,
     ) -> UserPayload:
-        return await register_user(info.context.db_pool, email, username, firstname, lastname, password)
+        return await register_user(
+            info.context.db_pool, email, username, firstname, lastname, password
+        )
+
 
 @strawberry.type
 class UserQuery:

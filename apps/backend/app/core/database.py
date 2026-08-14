@@ -8,5 +8,6 @@ class GraphQLContext(BaseContext):
         self.db_pool = db_pool
         self.request = request
 
+
 async def get_context(request: Request) -> GraphQLContext:
     return GraphQLContext(db_pool=request.app.state.pool, request=request)

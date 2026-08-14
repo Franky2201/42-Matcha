@@ -1,9 +1,10 @@
 import strawberry
+from strawberry.types import Info
+
 from app.core.security import verify_email_token
 from app.features.auth.schemas import AuthPayload
 from app.features.auth.service import authenticate_user
 from app.features.users.repository import verify_user_in_db
-from strawberry.types import Info
 
 
 @strawberry.type
@@ -21,9 +22,9 @@ class AuthMutation:
         email = verify_email_token(token)
         if not email:
             return "Invalid or expired token."
-        
+
         success = await verify_user_in_db(info.context.db_pool, email)
         if not success:
             return "User not found."
-        
+
         return "Email verified successfully."

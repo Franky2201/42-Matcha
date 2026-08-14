@@ -52,6 +52,7 @@ async def create_user_in_db(
     except asyncpg.UniqueViolationError:
         return None
 
+
 async def get_user_by_id(pool: asyncpg.Pool, user_id: int) -> dict | None:
     query = """
         SELECT id, email, username, lastname, firstname, is_verified, 
@@ -64,6 +65,7 @@ async def get_user_by_id(pool: asyncpg.Pool, user_id: int) -> dict | None:
     async with pool.acquire() as conn:
         record = await conn.fetchrow(query, user_id)
         return dict(record) if record else None
+
 
 async def verify_user_in_db(pool: asyncpg.Pool, email: str) -> bool:
     query = "UPDATE users SET is_verified = TRUE WHERE email = $1 RETURNING id;"

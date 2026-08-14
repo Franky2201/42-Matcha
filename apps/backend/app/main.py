@@ -3,17 +3,19 @@ from contextlib import asynccontextmanager
 
 import asyncpg
 import strawberry
-from app.core.database import get_context
-from app.features.auth.resolver import AuthMutation
-from app.features.users.resolver import UserMutation, UserQuery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
+
+from app.core.database import get_context
+from app.features.auth.resolver import AuthMutation
+from app.features.users.resolver import UserMutation, UserQuery
 
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
 
 @strawberry.type
 class Query(UserQuery):
@@ -21,11 +23,14 @@ class Query(UserQuery):
     def ping(self) -> str:
         return "pong"
 
+
 @strawberry.type
 class Mutation(AuthMutation, UserMutation):
     pass
 
+
 schema = strawberry.Schema(query=Query, mutation=Mutation)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +39,14 @@ async def lifespan(app: FastAPI):
     yield
     await app.state.pool.close()
 
+
 app = FastAPI(lifespan=lifespan)
+
+
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 
 graphql_app = GraphQLRouter(schema, context_getter=get_context)
 app.include_router(graphql_app, prefix="/graphql")
