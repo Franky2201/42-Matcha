@@ -33,6 +33,15 @@ export interface VerifyEmailMutationVariables {
     token: string;
 }
 
+export interface ResetPasswordMutationData {
+    resetPassword: string;
+}
+
+export interface ResetPasswordMutationVariables {
+    token: string;
+    newPassword: string;
+}
+
 export interface MeQueryData {
     me: User | null;
 }
