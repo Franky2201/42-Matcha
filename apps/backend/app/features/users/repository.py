@@ -72,3 +72,19 @@ async def verify_user_in_db(pool: asyncpg.Pool, email: str) -> bool:
     async with pool.acquire() as conn:
         record = await conn.fetchrow(query, email)
         return bool(record)
+
+
+async def check_user_exists_by_email(pool: asyncpg.Pool, email: str) -> bool:
+    query = "SELECT id FROM users WHERE email = $1;"
+    async with pool.acquire() as conn:
+        record = await conn.fetchrow(query, email)
+        return bool(record)
+
+
+async def update_user_password(
+    pool: asyncpg.Pool, email: str, new_password_hash: str
+) -> bool:
+    query = "UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id;"
+    async with pool.acquire() as conn:
+        record = await conn.fetchrow(query, new_password_hash, email)
+        return bool(record)

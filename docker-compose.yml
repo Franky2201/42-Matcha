@@ -30,6 +30,11 @@ services:
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/matcha}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - FROM_EMAIL=${FROM_EMAIL:-noreply@matcha.local}
     depends_on:
       db:
         condition: service_healthy
