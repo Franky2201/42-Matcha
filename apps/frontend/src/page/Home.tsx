@@ -33,13 +33,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8">
+      <h1 className="mb-8">
         Bienvenue {data?.me?.firstname || 'Utilisateur'}
       </h1>
-      
+
+      <div className="p-6 bg-white rounded-lg border border-gray-100 mb-8">
+        <h1>Mon Titre Principal</h1>
+        <h2 className="mt-4 mb-2">Une section importante</h2>
+        <p>Voici le texte normal de mon application, avec la police Mona Sans.</p>
+      </div>
+
       <button
         onClick={logout}
-        className="px-6 py-2 border-2 border-black rounded hover:bg-black hover:text-white transition-colors"
+        className="px-6 py-2 border-2 border-primary rounded hover:bg-primary hover:text-white transition-colors"
       >
         Se déconnecter
       </button>

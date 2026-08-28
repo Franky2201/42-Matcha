@@ -37,7 +37,7 @@ export default function LoginPage() {
     <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
       <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
         <div className="mx-auto w-full">
-          <h1 className="font-semibold text-3xl text-neutral-900 tracking-tighter">
+          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter">
             👋  Bienvenue sur matcha
           </h1>
           <p className="mt-4 mb-4 font-medium text-base text-neutral-500">
@@ -96,12 +96,12 @@ export default function LoginPage() {
                 </button>
               </div>
               <button
-                aria-label="Sign in with Google"
-                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3 font-medium duration-200 hover:bg-white/50 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                aria-label="Se connecter avec Google"
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3 font-medium duration-200 hover:bg-white/50 focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 type="button"
               >
                 <GoogleIcon className="size-6" />
-                <span className='text-black'>Sign in with Google</span>
+                <span className='text-black'>Se connecter avec Google</span>
               </button>
             </div>
             <Link to="/register" className="mx-auto mt-6 flex text-center text-neutral-500 leading-tight">

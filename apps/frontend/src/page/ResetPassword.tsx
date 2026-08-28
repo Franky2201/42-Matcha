@@ -56,41 +56,86 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-8">Nouveau mot de passe</h1>
+    <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
+      <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
+        <div className="mx-auto w-full">
+          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter">
+            Nouveau mot de passe
+          </h1>
 
-      {error && <div className="mb-4 text-red-600 font-semibold text-center max-w-sm">{error}</div>}
-      {success && <div className="mb-4 text-green-600 font-semibold text-center max-w-sm">{success}</div>}
+          {!token ? (
+            <div className="mt-6 flex flex-col gap-6">
+              <p className="font-medium text-base text-red-600">
+                Lien invalide ou expiré. Aucun jeton de sécurité trouvé dans l'URL.
+              </p>
+              <Link
+                to="/login"
+                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 font-medium text-white duration-200 hover:bg-primary-hover focus:ring-2 focus:ring-black focus:ring-offset-2"
+              >
+                Retour à la connexion
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="mt-4 mb-6 font-medium text-base text-neutral-500">
+                Choisissez un nouveau mot de passe sécurisé.
+              </p>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4">
-        <input
-          type="password"
-          placeholder="Nouveau mot de passe"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
+              <form onSubmit={handleSubmit}>
+                {error && (
+                  <div className="mb-4 rounded-xl bg-red-100 p-3 text-center text-sm font-medium text-red-600">
+                    {error}
+                  </div>
+                )}
+                {success && (
+                  <div className="mb-4 rounded-xl bg-green-100 p-3 text-center text-sm font-medium text-green-600">
+                    {success}
+                  </div>
+                )}
 
-        <input
-          type="password"
-          placeholder="Confirmer le mot de passe"
-          required
-          minLength={8}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
+                <div className="space-y-4">
+                  <div>
+                    <p className="mb-2 block text-neutral-600">Nouveau mot de passe</p>
+                    <input
+                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                      id="password"
+                      placeholder="Votre nouveau mot de passe"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      type="password"
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-2 block text-neutral-600">Confirmer le mot de passe</p>
+                    <input
+                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                      id="confirmPassword"
+                      placeholder="Confirmez le mot de passe"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      type="password"
+                    />
+                  </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Modification...' : 'Enregistrer'}
-        </button>
-      </form>
-    </div>
+                  <div className="col-span-full pt-2">
+                    <button
+                      className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 font-medium text-white duration-200 hover:bg-primary-hover focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? 'Modification...' : 'Enregistrer'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
