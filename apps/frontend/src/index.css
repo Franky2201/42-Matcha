@@ -1,37 +1,33 @@
 @import "tailwindcss";
 
-:root {
-    --color-grey: #cacaca;
-    --color-red: #ff9191;
-    --color-orange: #ffc780;
-    --color-yellow: #f7f08c;
-    --color-green: #b4db8f;
-    --color-blue: #6dd8fe;
-    --color-purple: #d791ff;
-    --color-pink: #ffbfff;
-    --color-violet: #a9a3ff;
-    --color-white: #f0f0f0;
-    --color-github: #101411;
-    --color-black: #000000;
+@theme {
+    --font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary: #d44e65;
+    --color-primary-hover: #b94257;
+
+    --radius-DEFAULT: 0.75rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.5rem;
 }
 
-.font-mona-sans-light {
-    font-family: "Mona Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
-}
+@layer base {
+    body {
+        @apply font-sans bg-white text-gray-900 antialiased;
+    }
 
-.font-mona-sans {
-    font-family: "Mona Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 700;
-    font-style: normal;
-}
+    h1,
+    .title {
+        @apply text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900;
+    }
 
-.font-mona-sans-title {
-    font-family: "Mona Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 900;
-    font-style: normal;
+    h2,
+    .subtitle {
+        @apply text-xl md:text-2xl font-semibold text-gray-800;
+    }
+
+    p,
+    .text-normal {
+        @apply text-base font-medium text-gray-600;
+    }
 }
