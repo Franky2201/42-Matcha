@@ -10,7 +10,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+schema.graphql
 *.local
+
 
 # Editor directories and files
 .vscode/*
