@@ -1,9 +1,9 @@
 import strawberry
-from flask import Flask, jsonify
+from flask import Flask, Request, Response, jsonify
 from flask_cors import CORS
 from strawberry.flask.views import AsyncGraphQLView
 
-from app.core.database import get_context
+from app.core.database import GraphQLContext, get_db_pool
 from app.features.auth.resolver import AuthMutation
 from app.features.users.resolver import UserMutation, UserQuery
 
@@ -27,6 +27,13 @@ class Mutation(AuthMutation, UserMutation):
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
+
+class CustomGraphQLView(AsyncGraphQLView):
+    async def get_context(self, request: Request, response: Response) -> GraphQLContext:
+        pool = await get_db_pool()
+        return GraphQLContext(db_pool=pool, request=request)
+
+
 app = Flask(__name__)
 
 CORS(
@@ -43,7 +50,5 @@ def root():
 
 app.add_url_rule(
     "/graphql",
-    view_func=AsyncGraphQLView.as_view(
-        "graphql_view", schema=schema, context_getter=get_context
-    ),
+    view_func=CustomGraphQLView.as_view("graphql_view", schema=schema),
 )
