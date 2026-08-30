@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
-from fastapi import Request
+from flask import Request
 
 SECRET_KEY = "votre_clef_secrete_super_longue_et_aleatoire"
 ALGORITHM = "HS256"
