@@ -4,7 +4,8 @@ from email.message import EmailMessage
 import aiosmtplib
 
 SMTP_HOST = os.getenv("SMTP_HOST", "")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+_smtp_port_raw = os.getenv("SMTP_PORT", "587")
+SMTP_PORT = int(_smtp_port_raw) if _smtp_port_raw and _smtp_port_raw.isdigit() else 587
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "noreply@matcha.local")

@@ -5,9 +5,9 @@ on:
     branches: ["main"]
 
 jobs:
-  # Job for the Backend (FastAPI)
+  # Job for the Backend (Flask)
   backend:
-    name: Backend (FastAPI)
+    name: Backend (Flask)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -28,15 +28,15 @@ jobs:
       - name: Lint with Ruff
         run: ruff check apps/backend
 
-      - name: Generate OpenAPI Schema
+      - name: Export GraphQL Schema
         run: |
-          PYTHONPATH=apps/backend python -m app.generate_openapi > openapi.json
+          PYTHONPATH=apps/backend python -c "from app.main import schema; print(schema.as_str())" > schema.graphql
 
-      - name: Upload OpenAPI Schema
+      - name: Upload GraphQL Schema
         uses: actions/upload-artifact@v4
         with:
-          name: openapi-schema
-          path: openapi.json
+          name: graphql-schema
+          path: schema.graphql
           retention-days: 1
 
   # Job for the Frontend SPA
@@ -55,10 +55,10 @@ jobs:
           cache: "npm"
           cache-dependency-path: "apps/frontend/package-lock.json"
 
-      - name: Download OpenAPI Schema
+      - name: Download GraphQL Schema
         uses: actions/download-artifact@v4
         with:
-          name: openapi-schema
+          name: graphql-schema
           path: apps/frontend
 
       - name: Install Dependencies
@@ -72,6 +72,7 @@ jobs:
       - name: Lint
         run: npm run lint
         working-directory: apps/frontend
+
 
       - name: Build
         run: npm run build

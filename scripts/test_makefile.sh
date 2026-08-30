@@ -70,13 +70,14 @@ fi
 
 # 2. Local Environment Setup & Compilation
 run_test "install-local" "Installs frontend dependencies and Python venv"
-run_test "types" "Generates OpenAPI schema and TypeScript definitions" "[ -f apps/frontend/src/types/api.ts ]"
+run_test "types" "Generates GraphQL schema and TypeScript definitions" "[ -f apps/frontend/src/types/graphql.ts ]"
 run_test "format" "Auto-formats backend (Ruff) and frontend (ESLint)"
 run_test "lint" "Lints backend and frontend codebases"
 run_test "build" "Compiles backend Python files and builds frontend distribution bundle" "[ -d apps/frontend/dist ]"
 
 # 3. Cleanup Target
-run_test "clean" "Cleans build artifacts and caches" "[ ! -d apps/frontend/dist ] && [ ! -f apps/frontend/openapi.json ]"
+run_test "clean" "Cleans build artifacts and caches" "[ ! -d apps/frontend/dist ] && [ ! -f apps/frontend/schema.graphql ]"
+
 
 # 4. Docker Integration Workflows
 if docker info >/dev/null 2>&1; then
