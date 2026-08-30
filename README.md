@@ -1,12 +1,12 @@
 # Matcha Monorepo
 
-This repository contains the `matcha` application codebase, structured as a Docker-orchestrated monorepo containing a React (TypeScript + Vite) frontend and a FastAPI (Python) backend.
+This repository contains the `matcha` application codebase, structured as a Docker-orchestrated monorepo containing a React (TypeScript + Vite) frontend and a Flask + Strawberry GraphQL (Python) backend.
 
 ---
 
 ## 🛠️ Tech Stack
-* **Frontend**: React 19, TypeScript, Vite
-* **Backend**: FastAPI, Python 3.11, Pydantic v2
+* **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Apollo Client
+* **Backend**: Flask, Python 3.11, Strawberry GraphQL, asyncpg
 * **Reverse Proxy**: Nginx (configured with SSL/TLS in production)
 * **Orchestration**: Docker Compose, Makefile
 
@@ -23,10 +23,10 @@ This repository contains the `matcha` application codebase, structured as a Dock
     ├── frontend/            # React client-side application
     │   ├── Dockerfile
     │   └── nginx/           # SSL config and certificates exporter
-    └── backend/             # FastAPI REST server
+    └── backend/             # Flask GraphQL server
         ├── Dockerfile
         ├── requirements.txt
-        └── app/             # Application logic (main.py, routers, models)
+        └── app/             # Application logic (main.py, features, core)
 ```
 
 ---
@@ -54,7 +54,7 @@ make dev
 Once started:
 * **Frontend**: Access at [http://localhost:5173](http://localhost:5173) (changes on host auto-sync immediately)
 * **Backend API**: Access at [http://localhost:8000](http://localhost:8000)
-* **API Documentation**: Interactive Swagger docs are available at [http://localhost:8000/docs](http://localhost:8000/docs)
+* **GraphQL & GraphiQL IDE**: Interactive GraphiQL explorer available at [http://localhost:8000/graphql](http://localhost:8000/graphql)
 
 To view container logs:
 ```bash
@@ -77,7 +77,7 @@ make prod
 Once up:
 * Access the app securely over HTTPS at [https://localhost](https://localhost)
 * Port `80` (HTTP) requests automatically redirect to `https://localhost` (HTTPS)
-* All `/api/` requests are reverse-proxied internally to the FastAPI container
+* All `/api/` and backend requests are reverse-proxied internally to the backend container
 
 To stop the production stack:
 ```bash
@@ -88,14 +88,12 @@ make down
 
 ## 🔄 Shared TypeScript Types
 
-Whenever you modify or add Pydantic schemas in the FastAPI backend (`apps/backend/app/models` or `main.py`), you can regenerate TypeScript types for the frontend with:
+Whenever you modify or add Strawberry schemas or resolvers in the backend (`apps/backend/app/features`), you can regenerate TypeScript types for the frontend with:
 ```bash
 make types
 ```
-This runs an offline compilation pipeline that exports the FastAPI OpenAPI schema and compiles it into:
-* **[apps/frontend/src/types/api.ts](apps/frontend/src/types/api.ts)**
-
-If you do not have Node/npx installed on your local host machine, the command automatically falls back to running the compiler inside a temporary Docker Node container, ensuring it works seamlessly for everyone.
+This exports the backend GraphQL schema and compiles it with GraphQL Code Generator into:
+* **[apps/frontend/src/types/graphql.ts](apps/frontend/src/types/graphql.ts)**
 
 ---
 
@@ -109,3 +107,4 @@ For a full deep-clean (removes `node_modules`, Docker volumes, and compiled imag
 ```bash
 make fclean
 ```
+

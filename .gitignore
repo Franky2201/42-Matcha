@@ -30,7 +30,8 @@ venv/
 ENV/
 
 # Shared types schema
-openapi.json
+schema.graphql
+
 
 # IDE & OS files
 .DS_Store

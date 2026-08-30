@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import Request
+from flask import Request
 
 from app.core.mailer import send_password_reset_email, send_verification_email
 from app.core.security import (
