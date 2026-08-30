@@ -109,8 +109,9 @@ add-js: apps/frontend/node_modules
 
 types: install-local
 	@mkdir -p apps/frontend/src/types
-	@$(RUN_PY) app/generate_openapi.py > apps/frontend/openapi.json.tmp && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
+	@$(RUN_PY) -m app.generate_openapi > apps/frontend/openapi.json.tmp && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
 	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
+
 
 
 lint: lint-backend lint-frontend
@@ -218,8 +219,9 @@ ci: check
 	printf "$(GREEN)Step 2: Pinging services$(NO_COLOR)\n" && \
 	$(MAKE) ping && \
 	printf "$(GREEN)Step 3: Generating types inside container$(NO_COLOR)\n" && \
-	$(COMPOSE_DEV) exec -T backend python app/generate_openapi.py > apps/frontend/openapi.json.tmp && \
+	$(COMPOSE_DEV) exec -T backend python -m app.generate_openapi > apps/frontend/openapi.json.tmp && \
 	mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json && \
+
 	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE ) && \
 
 	printf "$(GREEN)Step 4: Linting & formatting$(NO_COLOR)\n" && \

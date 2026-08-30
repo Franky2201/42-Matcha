@@ -80,16 +80,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The GraphiQL integrated development environment. */
+            /** @description GraphiQL IDE */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
-            /** @description Not found if GraphiQL or query via GET are not enabled. */
+            /** @description Not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -112,9 +110,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
         };
     };

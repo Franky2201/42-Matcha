@@ -33,9 +33,7 @@ def generate_openapi_spec() -> dict:
                 "post": {
                     "summary": "Handle Http Post",
                     "operationId": "handle_http_post_graphql_post",
-                    "responses": {
-                        "200": {"description": "Successful Response"}
-                    },
+                    "responses": {"200": {"description": "Successful Response"}},
                 },
             },
         },
@@ -49,4 +47,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

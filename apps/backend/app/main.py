@@ -47,4 +47,3 @@ app.add_url_rule(
         "graphql_view", schema=schema, context_getter=get_context
     ),
 )
-

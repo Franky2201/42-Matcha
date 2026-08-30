@@ -1,7 +1,9 @@
-from typing import Any
 import os
+from typing import Any
+
 import asyncpg
-from flask import Request, request as flask_request
+from flask import Request
+from flask import request as flask_request
 
 _db_pool: asyncpg.Pool | None = None
 
@@ -31,5 +33,3 @@ async def get_context(request: Any = None, response: Any = None) -> GraphQLConte
     pool = await get_db_pool()
     req = request or flask_request
     return GraphQLContext(db_pool=pool, request=req)
-
-
