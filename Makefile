@@ -159,7 +159,8 @@ up: check
 	B_PORT=$${BACKEND_PORT:-8000}; \
 	printf "$(GREEN)Services started successfully!$(NO_COLOR)\n"; \
 	printf "$(GREEN)  Frontend: $(LINK_START)http://localhost:$$F_PORT$(LINK_MID)http://localhost:$$F_PORT$(LINK_CLOSE) $(NO_COLOR)\n"; \
-	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (API Docs: $(LINK_START)http://localhost:$$B_PORT/docs$(LINK_MID)http://localhost:$$B_PORT/docs$(LINK_CLOSE) )$(NO_COLOR)\n"
+	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (GraphQL IDE: $(LINK_START)http://localhost:$$B_PORT/graphql$(LINK_MID)http://localhost:$$B_PORT/graphql$(LINK_CLOSE) )$(NO_COLOR)\n"
+
 	@$(MAKE) ping
 
 down:
