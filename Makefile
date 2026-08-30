@@ -42,7 +42,7 @@ all: dev
 
 help:
 	@printf "$(GREEN)Workflows:$(NO_COLOR)\n"
-	@printf "  dev            Start dev environment (types -> format -> lint -> up -> ping)\n"
+	@printf "  dev            Start dev environment (format -> lint -> up -> ping)\n"
 	@printf "  prod           Start production environment\n"
 	@printf "  down           Stop containers (preserves volumes)\n"
 	@printf "  status / logs  Check container status or follow logs\n"
@@ -53,11 +53,11 @@ help:
 	@printf "  add-js <pkg>   Install frontend npm package(s)\n"
 	@printf "\n"
 	@printf "$(GREEN)Tooling:$(NO_COLOR)\n"
-	@printf "  types          Generate TS types from FastAPI backend\n"
 	@printf "  lint           Check frontend and backend code\n"
 	@printf "  format         Auto-fix frontend and backend code\n"
 	@printf "  build          Build backend compiled files & frontend bundle\n"
 	@printf "  ci             Simulate full CI pipeline in Docker locally\n"
+
 	@printf "\n"
 	@printf "$(GREEN)Cleanup:$(NO_COLOR)\n"
 	@printf "  clean          Remove build cache and temporary files\n"
@@ -103,17 +103,6 @@ add-js: apps/frontend/node_modules
 	@if [ -z "$(PKG)" ]; then printf "$(RED)Usage: make add-js <package1> [package2...]$(NO_COLOR)\n"; exit 1; fi
 	@npm --prefix apps/frontend install $(PKG)
 
-# ==============================================================================
-# 3. Code Quality & Types
-# ==============================================================================
-
-types: install-local
-	@mkdir -p apps/frontend/src/types
-	@$(RUN_PY) -m app.generate_openapi > apps/frontend/openapi.json.tmp && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
-	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
-
-
-
 lint: lint-backend lint-frontend
 
 lint-backend: install-local
@@ -147,7 +136,8 @@ build-frontend: apps/frontend/dist
 # ==============================================================================
 
 dev: COMPOSE := $(COMPOSE_DEV)
-dev: types format lint up
+dev: format lint up
+
 
 prod: COMPOSE := $(COMPOSE_PROD)
 prod: check up
@@ -218,17 +208,11 @@ ci: check
 	$(COMPOSE_DEV) up -d --remove-orphans --build --wait && \
 	printf "$(GREEN)Step 2: Pinging services$(NO_COLOR)\n" && \
 	$(MAKE) ping && \
-	printf "$(GREEN)Step 3: Generating types inside container$(NO_COLOR)\n" && \
-	$(COMPOSE_DEV) exec -T backend python -m app.generate_openapi > apps/frontend/openapi.json.tmp && \
-	mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json && \
-
-	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE ) && \
-
-	printf "$(GREEN)Step 4: Linting & formatting$(NO_COLOR)\n" && \
+	printf "$(GREEN)Step 3: Linting & formatting$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend ruff check . && \
 	$(COMPOSE_DEV) exec -T backend ruff format --check . && \
 	$(COMPOSE_DEV) exec -T frontend npm run lint && \
-	printf "$(GREEN)Step 5: Building$(NO_COLOR)\n" && \
+	printf "$(GREEN)Step 4: Building$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend python -m compileall app && \
 	$(COMPOSE_DEV) exec -T frontend npm run build && \
 	printf "$(GREEN)--- CI Simulation Passed ---$(NO_COLOR)\n"
@@ -238,7 +222,7 @@ ci: check
 # ==============================================================================
 
 clean:
-	@rm -rf apps/frontend/dist .ruff_cache .build-backend .format-stamp .lint-stamp .up-stamp .dev-stamp apps/frontend/openapi.json apps/frontend/openapi.json.tmp
+	@rm -rf apps/frontend/dist .ruff_cache .build-backend .format-stamp .lint-stamp .up-stamp .dev-stamp
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 
@@ -256,4 +240,5 @@ prune: fclean
 	@docker volume prune -f --filter "label=com.docker.compose.project=$(PROJECT_NAME)-prod" >/dev/null 2>&1 || true
 	@printf "$(GREEN)Project scoped resources pruned$(NO_COLOR)\n"
 
-.PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
+.PHONY: all help check check-env check-docker install-local add-py add-js lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
+
