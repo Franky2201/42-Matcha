@@ -42,7 +42,7 @@ all: dev
 
 help:
 	@printf "$(GREEN)Workflows:$(NO_COLOR)\n"
-	@printf "  dev            Start dev environment (types -> format -> lint -> up -> ping)\n"
+	@printf "  dev            Start dev environment (format -> lint -> up -> ping)\n"
 	@printf "  prod           Start production environment\n"
 	@printf "  down           Stop containers (preserves volumes)\n"
 	@printf "  status / logs  Check container status or follow logs\n"
@@ -53,11 +53,13 @@ help:
 	@printf "  add-js <pkg>   Install frontend npm package(s)\n"
 	@printf "\n"
 	@printf "$(GREEN)Tooling:$(NO_COLOR)\n"
-	@printf "  types          Generate TS types from FastAPI backend\n"
+	@printf "  types          Generate TS types from GraphQL backend schema\n"
 	@printf "  lint           Check frontend and backend code\n"
 	@printf "  format         Auto-fix frontend and backend code\n"
 	@printf "  build          Build backend compiled files & frontend bundle\n"
 	@printf "  ci             Simulate full CI pipeline in Docker locally\n"
+
+
 	@printf "\n"
 	@printf "$(GREEN)Cleanup:$(NO_COLOR)\n"
 	@printf "  clean          Remove build cache and temporary files\n"
@@ -109,8 +111,8 @@ add-js: apps/frontend/node_modules
 
 types: install-local
 	@mkdir -p apps/frontend/src/types
-	@$(RUN_PY) -c "from app.main import app; import json; open('apps/frontend/openapi.json.tmp', 'w').write(json.dumps(app.openapi()))" && mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json
-	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE
+	@$(RUN_PY) -c "from app.main import schema; print(schema.as_str())" > apps/frontend/schema.graphql
+	@npm --prefix apps/frontend run build:types; EXIT_CODE=$$?; rm -f apps/frontend/schema.graphql; exit $$EXIT_CODE
 
 lint: lint-backend lint-frontend
 
@@ -157,7 +159,8 @@ up: check
 	B_PORT=$${BACKEND_PORT:-8000}; \
 	printf "$(GREEN)Services started successfully!$(NO_COLOR)\n"; \
 	printf "$(GREEN)  Frontend: $(LINK_START)http://localhost:$$F_PORT$(LINK_MID)http://localhost:$$F_PORT$(LINK_CLOSE) $(NO_COLOR)\n"; \
-	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (API Docs: $(LINK_START)http://localhost:$$B_PORT/docs$(LINK_MID)http://localhost:$$B_PORT/docs$(LINK_CLOSE) )$(NO_COLOR)\n"
+	printf "$(GREEN)  Backend:  $(LINK_START)http://localhost:$$B_PORT$(LINK_MID)http://localhost:$$B_PORT$(LINK_CLOSE) (GraphQL IDE: $(LINK_START)http://localhost:$$B_PORT/graphql$(LINK_MID)http://localhost:$$B_PORT/graphql$(LINK_CLOSE) )$(NO_COLOR)\n"
+
 	@$(MAKE) ping
 
 down:
@@ -217,9 +220,8 @@ ci: check
 	printf "$(GREEN)Step 2: Pinging services$(NO_COLOR)\n" && \
 	$(MAKE) ping && \
 	printf "$(GREEN)Step 3: Generating types inside container$(NO_COLOR)\n" && \
-	$(COMPOSE_DEV) exec -T backend python -c "from app.main import app; import json, sys; sys.stdout.write(json.dumps(app.openapi()))" > apps/frontend/openapi.json.tmp && \
-	mv apps/frontend/openapi.json.tmp apps/frontend/openapi.json && \
-	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/openapi.json apps/frontend/openapi.json.tmp; exit $$EXIT_CODE ) && \
+	$(COMPOSE_DEV) exec -T backend python -c "from app.main import schema; print(schema.as_str())" > apps/frontend/schema.graphql && \
+	( $(COMPOSE_DEV) exec -T frontend npm run build:types; EXIT_CODE=$$?; rm -f apps/frontend/schema.graphql; exit $$EXIT_CODE ) && \
 	printf "$(GREEN)Step 4: Linting & formatting$(NO_COLOR)\n" && \
 	$(COMPOSE_DEV) exec -T backend ruff check . && \
 	$(COMPOSE_DEV) exec -T backend ruff format --check . && \
@@ -234,7 +236,7 @@ ci: check
 # ==============================================================================
 
 clean:
-	@rm -rf apps/frontend/dist .ruff_cache .build-backend .format-stamp .lint-stamp .up-stamp .dev-stamp apps/frontend/openapi.json apps/frontend/openapi.json.tmp
+	@rm -rf apps/frontend/dist .ruff_cache .build-backend .format-stamp .lint-stamp .up-stamp .dev-stamp apps/frontend/schema.graphql
 	@find apps/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	@find apps/backend -name "*.pyc" -delete 2>/dev/null || true
 
@@ -253,3 +255,5 @@ prune: fclean
 	@printf "$(GREEN)Project scoped resources pruned$(NO_COLOR)\n"
 
 .PHONY: all help check check-env check-docker install-local add-py add-js types lint lint-backend lint-frontend format format-backend format-frontend build build-backend build-frontend dev prod up down status logs ping dev-status dev-logs prod-status prod-logs ci clean fclean re prune
+
+

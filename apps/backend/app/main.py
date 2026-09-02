@@ -1,13 +1,9 @@
-import os
-from contextlib import asynccontextmanager
-
-import asyncpg
 import strawberry
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from strawberry.fastapi import GraphQLRouter
+from flask import Flask, Request, Response, jsonify
+from flask_cors import CORS
+from strawberry.flask.views import AsyncGraphQLView
 
-from app.core.database import get_context
+from app.core.database import GraphQLContext, get_db_pool
 from app.features.auth.resolver import AuthMutation
 from app.features.users.resolver import UserMutation, UserQuery
 
@@ -32,29 +28,27 @@ class Mutation(AuthMutation, UserMutation):
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    db_url = os.getenv("DATABASE_URL")
-    app.state.pool = await asyncpg.create_pool(db_url)
-    yield
-    await app.state.pool.close()
+class CustomGraphQLView(AsyncGraphQLView):
+    async def get_context(self, request: Request, response: Response) -> GraphQLContext:
+        pool = await get_db_pool()
+        return GraphQLContext(db_pool=pool, request=request)
 
 
-app = FastAPI(lifespan=lifespan)
+app = Flask(__name__)
+
+CORS(
+    app,
+    resources={r"/*": {"origins": origins}},
+    supports_credentials=True,
+)
 
 
-@app.get("/")
-async def root():
-    return {"status": "ok"}
+@app.route("/")
+def root():
+    return jsonify({"status": "ok"})
 
 
-graphql_app = GraphQLRouter(schema, context_getter=get_context)
-app.include_router(graphql_app, prefix="/graphql")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app.add_url_rule(
+    "/graphql",
+    view_func=CustomGraphQLView.as_view("graphql_view", schema=schema),
 )
