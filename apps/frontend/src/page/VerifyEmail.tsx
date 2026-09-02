@@ -31,7 +31,7 @@ export default function VerifyEmail() {
     <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
       <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
         <div className="mx-auto w-full text-center">
-          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter mb-8">
+          <h1 className="mb-8">
             Vérification du compte
           </h1>
 
@@ -40,11 +40,11 @@ export default function VerifyEmail() {
               Aucun jeton de vérification fourni dans l'URL.
             </p>
           ) : loading ? (
-            <p className="mb-8 font-medium text-base text-neutral-500">
+            <p className="mb-8 text-base">
               Vérification en cours, veuillez patienter...
             </p>
           ) : (
-            <p className="mb-8 font-medium text-base text-neutral-900">
+            <p className="mb-8 text-base">
               {message}
             </p>
           )}

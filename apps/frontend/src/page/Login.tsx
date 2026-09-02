@@ -37,10 +37,10 @@ export default function LoginPage() {
     <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
       <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
         <div className="mx-auto w-full">
-          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter">
-            👋  Bienvenue sur matcha
+          <h1>
+            👋  Connexion
           </h1>
-          <p className="mt-4 mb-4 font-medium text-base text-neutral-500">
+          <p className="mt-4 mb-4 text-base">
             Connectez-vous pour accéder à votre compte.
           </p>
 
@@ -52,11 +52,11 @@ export default function LoginPage() {
             )}
             <div className="space-y-4">
               <div>
-                <p className="mb-2 block text-neutral-600">
+                <p className="mb-2 block">
                   Nom d'utilisateur
                 </p>
                 <input
-                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
                   id="username"
                   placeholder="johndoe"
                   value={username}
@@ -67,17 +67,15 @@ export default function LoginPage() {
               </div>
               <div className="col-span-full">
                 <div className="flex items-center justify-between mb-2">
-                  <p
-                    className="block text-neutral-600"
-                  >
+                  <p className="block">
                     Mot de passe
                   </p>
-                  <Link to="/forgot-password" className="text-base text-neutral-500">
+                  <Link to="/forgot-password" className="text-base font-medium text-neutral-600 hover:text-neutral-800">
                     Oublié ?
                   </Link>
                 </div>
                 <input
-                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
                   id="password"
                   placeholder="Votre mot de passe"
                   value={password}
@@ -104,7 +102,7 @@ export default function LoginPage() {
                 <span className='text-black'>Se connecter avec Google</span>
               </button>
             </div>
-            <Link to="/register" className="mx-auto mt-6 flex text-center text-neutral-500 leading-tight">
+            <Link to="/register" className="mx-auto mt-6 flex text-center font-medium text-neutral-600 hover:text-neutral-800 leading-tight">
               Pas encore de compte ?
             </Link>
           </form>

@@ -50,7 +50,7 @@ export default function ResetPassword() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
         <p className="text-red-600 mb-4">Lien invalide ou expiré.</p>
-        <Link to="/login" className="underline">Retour à la connexion</Link>
+        <Link to="/login" className="underline font-medium text-neutral-600 hover:text-neutral-800">Retour à la connexion</Link>
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default function ResetPassword() {
     <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
       <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
         <div className="mx-auto w-full">
-          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter">
+          <h1>
             Nouveau mot de passe
           </h1>
 
@@ -68,16 +68,11 @@ export default function ResetPassword() {
               <p className="font-medium text-base text-red-600">
                 Lien invalide ou expiré. Aucun jeton de sécurité trouvé dans l'URL.
               </p>
-              <Link
-                to="/login"
-                className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 font-medium text-white duration-200 hover:bg-primary-hover focus:ring-2 focus:ring-black focus:ring-offset-2"
-              >
-                Retour à la connexion
-              </Link>
+              <Link to="/login" className="underline font-medium text-neutral-600 hover:text-neutral-800">Retour à la connexion</Link>
             </div>
           ) : (
             <>
-              <p className="mt-4 mb-6 font-medium text-base text-neutral-500">
+              <p className="mt-4 mb-6 text-base">
                 Choisissez un nouveau mot de passe sécurisé.
               </p>
 
@@ -95,9 +90,9 @@ export default function ResetPassword() {
 
                 <div className="space-y-4">
                   <div>
-                    <p className="mb-2 block text-neutral-600">Nouveau mot de passe</p>
+                    <p className="mb-2 block">Nouveau mot de passe</p>
                     <input
-                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
                       id="password"
                       placeholder="Votre nouveau mot de passe"
                       value={password}
@@ -110,7 +105,7 @@ export default function ResetPassword() {
                   <div>
                     <p className="mb-2 block text-neutral-600">Confirmer le mot de passe</p>
                     <input
-                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                      className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
                       id="confirmPassword"
                       placeholder="Confirmez le mot de passe"
                       value={confirmPassword}

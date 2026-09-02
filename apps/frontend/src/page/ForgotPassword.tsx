@@ -33,10 +33,10 @@ export default function ForgotPassword() {
     <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
       <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
         <div className="mx-auto w-full">
-          <h1 className="font-semibold text-3xl text-neutral-600 tracking-tighter">
+          <h1>
             Mot de passe oublié
           </h1>
-          <p className="mt-4 mb-6 font-medium text-base text-neutral-500">
+          <p className="mt-4 mb-6 text-base">
             Entrez votre adresse email pour recevoir un lien de réinitialisation.
           </p>
 
@@ -54,9 +54,9 @@ export default function ForgotPassword() {
 
             <div className="space-y-4">
               <div>
-                <p className="mb-2 block text-neutral-600">Email</p>
+                <p className="mb-2 block">Email</p>
                 <input
-                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 text-neutral-900 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
                   id="email"
                   placeholder="m@example.com"
                   value={email}
@@ -77,7 +77,7 @@ export default function ForgotPassword() {
               </div>
             </div>
 
-            <Link to="/login" className="mx-auto mt-6 flex justify-center text-center text-neutral-500 hover:text-black leading-tight duration-200">
+            <Link to="/login" className="mx-auto mt-6 flex justify-center text-center font-medium text-neutral-600 hover:text-neutral-800 leading-tight duration-200">
               Retour à la connexion
             </Link>
           </form>
