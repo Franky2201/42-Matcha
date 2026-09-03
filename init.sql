@@ -29,5 +29,14 @@ VALUES (
     'juhanse',
     'Hanse',
     'Julien',
-    '$2a$12$lxcIPF4h7s6TPz7yYlMPXO4Q0mmMJWU/phxw/bkyqJEfuZk/mnuSa'
+    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK'
+) ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO users (email, username, lastname, firstname, password_hash)
+VALUES (
+    'michel@matcha.com',
+    'michel',
+    'Michel',
+    'Michel',
+    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK'
 ) ON CONFLICT (email) DO NOTHING;
