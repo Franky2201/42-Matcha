@@ -31,7 +31,7 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 class CustomGraphQLView(GraphQLView):
     def get_context(self, request: Request, response: Response) -> GraphQLContext:
         pool = get_db_pool()
-        return GraphQLContext(db_pool=pool, request=request)
+        return GraphQLContext(db_pool=pool, request=request, response=response)
 
 
 app = Flask(__name__)

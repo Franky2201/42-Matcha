@@ -22,11 +22,12 @@ export default function LoginPage() {
         variables: { username, password }
       });
 
-      if (data?.login?.token) {
-        login(data.login.token);
+      const successMessage = data?.login?.message;
+      if (successMessage === 'Connexion réussie') {
+        login();
         navigate('/');
       } else {
-        setError(data?.login?.message || 'Erreur de connexion');
+        setError(successMessage || 'Erreur de connexion');
       }
     } catch {
       setError('Une erreur inattendue est survenue.');

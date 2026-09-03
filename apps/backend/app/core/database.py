@@ -1,6 +1,6 @@
 import os
 
-from flask import Request
+from flask import Request, Response
 from psycopg2.pool import SimpleConnectionPool
 
 _db_pool: SimpleConnectionPool | None = None
@@ -37,6 +37,8 @@ class GraphQLContext:
         self,
         db_pool: SimpleConnectionPool,
         request: Request,
+        response: Response,
     ):
         self.db_pool = db_pool
         self.request = request
+        self.response = response

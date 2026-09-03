@@ -1,14 +1,24 @@
 import { Navigate } from 'react-router-dom';
-import { useQuery } from '@apollo/client/react';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '../hooks/useAuth';
+import { LOGOUT_MUTATION } from '../lib/mutations';
 import { ME_QUERY } from '../lib/queries';
 
 export default function Home() {
   const { isAuthenticated, logout } = useAuth();
+  const [logoutMutation] = useMutation(LOGOUT_MUTATION);
 
   const { data, loading, error } = useQuery(ME_QUERY, {
     skip: !isAuthenticated,
   });
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation();
+    } finally {
+      logout();
+    }
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -26,7 +36,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <p className="text-red-600">Erreur lors de la récupération du profil.</p>
-        <button onClick={logout} className="underline">Se déconnecter</button>
+        <button onClick={handleLogout} className="underline">Se déconnecter</button>
       </div>
     );
   }

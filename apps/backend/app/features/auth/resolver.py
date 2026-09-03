@@ -9,8 +9,23 @@ from app.features.auth.service import authenticate_user
 class AuthMutation:
     @strawberry.mutation
     def login(self, info: Info, username: str, password: str) -> AuthPayload:
-        return authenticate_user(info.context.db_pool, username, password)
+        payload, token = authenticate_user(info.context.db_pool, username, password)
+
+        if token:
+            info.context.response.set_cookie(
+                key="token",
+                value=token,
+                httponly=True,
+                secure=False,
+                samesite="lax",
+                max_age=3600,
+            )
+
+        return payload
 
     @strawberry.mutation
-    def logout(self) -> str:
-        return "Logout successful. Please remove the token on the client."
+    def logout(self, info: Info) -> str:
+        info.context.response.set_cookie(
+            key="token", value="", httponly=True, expires=0
+        )
+        return "Déconnexion réussie."

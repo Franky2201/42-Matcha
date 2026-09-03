@@ -113,6 +113,11 @@ export type RegisterMutationVariables = Exact<{
 
 export type RegisterMutation = { register: { message: string, user: { id: number } | null } };
 
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { logout: string };
+
 export type RequestPasswordResetMutationVariables = Exact<{
   email: string;
 }>;
