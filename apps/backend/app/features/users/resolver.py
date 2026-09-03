@@ -1,6 +1,8 @@
 import strawberry
 from strawberry.types import Info
 
+from app.core.security import verify_email_token
+from app.features.users.repository import verify_user_in_db
 from app.features.users.schemas import User, UserPayload
 from app.features.users.service import (
     get_me,
@@ -13,7 +15,7 @@ from app.features.users.service import (
 @strawberry.type
 class UserMutation:
     @strawberry.mutation
-    async def register(
+    def register(
         self,
         info: Info,
         email: str,
@@ -22,21 +24,33 @@ class UserMutation:
         lastname: str,
         password: str,
     ) -> UserPayload:
-        return await register_user(
+        return register_user(
             info.context.db_pool, email, username, firstname, lastname, password
         )
 
     @strawberry.mutation
-    async def request_password_reset(self, info: Info, email: str) -> str:
-        return await process_password_reset_request(info.context.db_pool, email)
+    def verify_email(self, info: Info, token: str) -> str:
+        email = verify_email_token(token)
+        if not email:
+            return "Invalid or expired token."
+
+        success = verify_user_in_db(info.context.db_pool, email)
+        if not success:
+            return "User not found."
+
+        return "Email verified successfully."
 
     @strawberry.mutation
-    async def reset_password(self, info: Info, token: str, new_password: str) -> str:
-        return await process_password_reset(info.context.db_pool, token, new_password)
+    def request_password_reset(self, info: Info, email: str) -> str:
+        return process_password_reset_request(info.context.db_pool, email)
+
+    @strawberry.mutation
+    def reset_password(self, info: Info, token: str, new_password: str) -> str:
+        return process_password_reset(info.context.db_pool, token, new_password)
 
 
 @strawberry.type
 class UserQuery:
     @strawberry.field
-    async def me(self, info: Info) -> User | None:
-        return await get_me(info.context.db_pool, info.context.request)
+    def me(self, info: Info) -> User | None:
+        return get_me(info.context.db_pool, info.context.request)

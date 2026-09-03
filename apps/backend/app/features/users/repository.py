@@ -1,8 +1,9 @@
-import asyncpg
+from psycopg2 import errors
+from psycopg2.extras import RealDictCursor
 
 
-async def create_user_in_db(
-    pool: asyncpg.Pool,
+def create_user_in_db(
+    pool,
     email: str,
     username: str,
     firstname: str,
@@ -17,7 +18,7 @@ async def create_user_in_db(
             lastname,
             password_hash
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING
             id,
             email,
@@ -37,54 +38,76 @@ async def create_user_in_db(
             created_at;
     """
 
+    conn = pool.getconn()
     try:
-        async with pool.acquire() as conn:
-            record = await conn.fetchrow(
-                query,
-                email,
-                username,
-                firstname,
-                lastname,
-                password_hash,
-            )
-            return dict(record) if record else None
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            try:
+                cur.execute(
+                    query,
+                    (email, username, firstname, lastname, password_hash),
+                )
+                record = cur.fetchone()
+                conn.commit()
+                return dict(record) if record else None
+            except errors.UniqueViolation:
+                conn.rollback()
+                return None
+    finally:
+        pool.putconn(conn)
 
-    except asyncpg.UniqueViolationError:
-        return None
 
-
-async def get_user_by_id(pool: asyncpg.Pool, user_id: int) -> dict | None:
+def get_user_by_id(pool, user_id: int) -> dict | None:
     query = """
         SELECT id, email, username, lastname, firstname, is_verified, 
                gender::text, preference::text, biography, fame_rating, 
                latitude, longitude, last_connection, is_online, 
                updated_at, created_at
         FROM users 
-        WHERE id = $1;
+        WHERE id = %s;
     """
-    async with pool.acquire() as conn:
-        record = await conn.fetchrow(query, user_id)
-        return dict(record) if record else None
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (user_id,))
+            record = cur.fetchone()
+            return dict(record) if record else None
+    finally:
+        pool.putconn(conn)
 
 
-async def verify_user_in_db(pool: asyncpg.Pool, email: str) -> bool:
-    query = "UPDATE users SET is_verified = TRUE WHERE email = $1 RETURNING id;"
-    async with pool.acquire() as conn:
-        record = await conn.fetchrow(query, email)
-        return bool(record)
+def verify_user_in_db(pool, email: str) -> bool:
+    query = "UPDATE users SET is_verified = TRUE WHERE email = %s RETURNING id;"
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (email,))
+            record = cur.fetchone()
+            conn.commit()
+            return bool(record)
+    finally:
+        pool.putconn(conn)
 
 
-async def check_user_exists_by_email(pool: asyncpg.Pool, email: str) -> bool:
-    query = "SELECT id FROM users WHERE email = $1;"
-    async with pool.acquire() as conn:
-        record = await conn.fetchrow(query, email)
-        return bool(record)
+def check_user_exists_by_email(pool, email: str) -> bool:
+    query = "SELECT id FROM users WHERE email = %s;"
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (email,))
+            record = cur.fetchone()
+            return bool(record)
+    finally:
+        pool.putconn(conn)
 
 
-async def update_user_password(
-    pool: asyncpg.Pool, email: str, new_password_hash: str
-) -> bool:
-    query = "UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id;"
-    async with pool.acquire() as conn:
-        record = await conn.fetchrow(query, new_password_hash, email)
-        return bool(record)
+def update_user_password(pool, email: str, new_password_hash: str) -> bool:
+    query = "UPDATE users SET password_hash = %s WHERE email = %s RETURNING id;"
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (new_password_hash, email))
+            record = cur.fetchone()
+            conn.commit()
+            return bool(record)
+    finally:
+        pool.putconn(conn)
