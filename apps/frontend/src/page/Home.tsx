@@ -1,48 +1,47 @@
 import { Navigate } from 'react-router-dom';
-import { useQuery } from '@apollo/client/react';
 import { useAuth } from '../hooks/useAuth';
-import { ME_QUERY } from '../lib/queries';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { FilterSection } from '../components/Filter';
+import { ProfileStack } from '../components/Stack';
+import { useUser } from '../context/UserContext';
+import type { MockProfile } from '../types/ui';
+
+const mockProfile: MockProfile = {
+  id: "1",
+  name: "Sophie",
+  age: 26,
+  distance: 3,
+  rating: 4.8,
+  tags: ["vegan", "art", "voyage"],
+  imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+};
 
 export default function Home() {
-  const { isAuthenticated, logout } = useAuth();
-
-  const { data, loading, error } = useQuery(ME_QUERY, {
-    skip: !isAuthenticated,
-  });
+  const { isAuthenticated } = useAuth();
+  const { user } = useUser();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p>Chargement...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
-        <p className="text-red-600">Erreur lors de la récupération du profil.</p>
-        <button onClick={logout} className="underline">Se déconnecter</button>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold mb-8">
-        Bienvenue {data?.me?.firstname || 'Utilisateur'}
-      </h1>
-      
-      <button
-        onClick={logout}
-        className="px-6 py-2 border-2 border-black rounded hover:bg-black hover:text-white transition-colors"
-      >
-        Se déconnecter
-      </button>
+    <div className="flex min-h-screen flex-col bg-white bg-cover bg-center bg-fixed">
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <Header />
+
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
+          <FilterSection />
+
+          <div className="flex-1 flex items-center justify-center py-4">
+            <ProfileStack profile={mockProfile} />
+          </div>
+        </main>
+
+        <Footer />
+      </div>
     </div>
   );
 }

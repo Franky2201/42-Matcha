@@ -6,6 +6,7 @@ import RootWrapper from "./components/RootWrapper";
 import ForgotPassword from "./page/ForgotPassword";
 import VerifyEmail from "./page/VerifyEmail";
 import ResetPassword from "./page/ResetPassword";
+import Profile from "./page/Profile";
 
 export const router = createBrowserRouter([
     {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
             {
                 path: "reset-password",
                 element: <ResetPassword />
+            },
+            {
+                path: "profile",
+                element: <Profile />
             }
         ],
     },

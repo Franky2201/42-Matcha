@@ -29,8 +29,8 @@ export default function Register() {
     }
 
     try {
-      const { data } = await registerMutation({ 
-        variables: { email, username, firstname, lastname, password } 
+      const { data } = await registerMutation({
+        variables: { email, username, firstname, lastname, password }
       });
 
       if (data?.register?.user) {
@@ -45,73 +45,107 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-8">Inscription</h1>
-      
-      {error && <div className="mb-4 text-red-600 font-semibold text-center">{error}</div>}
-      {success && <div className="mb-4 text-green-600 font-semibold text-center">{success}</div>}
+    <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
+      <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
+        <div className="mx-auto w-full">
+          <h1>
+            👋 Bienvenue sur matcha
+          </h1>
+          <p className="mt-4 mb-4">
+            Créez un compte pour rejoindre matcha.
+          </p>
 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-
-        <input
-          type="text"
-          placeholder="Nom d'utilisateur"
-          required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-
-        <input
-          type="text"
-          placeholder="Prénom"
-          required
-          value={firstname}
-          onChange={(e) => setFirstname(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-
-        <input
-          type="text"
-          placeholder="Nom de famille"
-          required
-          value={lastname}
-          onChange={(e) => setLastname(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-        
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Chargement...' : 'S\'inscrire'}
-        </button>
-      </form>
-
-      <div className="mt-6 flex flex-col items-center gap-2 text-sm">
-        <Link to="/login" className="hover:underline">
-          J'ai déjà un compte
-        </Link>
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 rounded-xl bg-red-100 p-3 text-center text-sm font-medium text-red-600">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 rounded-xl bg-green-100 p-3 text-center text-sm font-medium text-green-600">
+                {success}
+              </div>
+            )}
+            <div className="space-y-4">
+              <div>
+                <p className="mb-2 block">Email</p>
+                <input
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  id="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  type="email"
+                />
+              </div>
+              <div>
+                <p className="mb-2 block">Nom d'utilisateur</p>
+                <input
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  id="username"
+                  placeholder="johndoe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  type="text"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <p className="mb-2 block">Prénom</p>
+                  <input
+                    className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                    id="firstname"
+                    placeholder="John"
+                    value={firstname}
+                    onChange={(e) => setFirstname(e.target.value)}
+                    required
+                    type="text"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="mb-2 block">Nom de famille</p>
+                  <input
+                    className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                    id="lastname"
+                    placeholder="Doe"
+                    value={lastname}
+                    onChange={(e) => setLastname(e.target.value)}
+                    required
+                    type="text"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 block">Mot de passe</p>
+                <input
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  id="password"
+                  placeholder="Votre mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  type="password"
+                />
+              </div>
+              <div className="col-span-full pt-2">
+                <button
+                  className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 font-medium text-white duration-200 hover:bg-primary-hover focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? 'Chargement...' : 'S\'inscrire'}
+                </button>
+              </div>
+            </div>
+            <Link to="/login" className="mx-auto mt-6 flex justify-center text-center font-medium text-neutral-600 hover:text-neutral-800 leading-tight">
+              J'ai déjà un compte
+            </Link>
+          </form>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

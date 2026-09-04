@@ -1,30 +1,29 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useState, type ReactNode } from 'react';
+import { useApolloClient } from '@apollo/client/react';
 import type { AuthContextType } from '../types/auth';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    localStorage.getItem('isAuthenticated') === 'true'
+  );
+  const client = useApolloClient();
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('token', token);
-    } else {
-      localStorage.removeItem('token');
-    }
-  }, [token]);
-
-  const login = (newToken: string) => {
-    setToken(newToken);
+  const login = () => {
+    localStorage.setItem('isAuthenticated', 'true');
+    setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    setToken(null);
+  const logout = async () => {
+    localStorage.removeItem('isAuthenticated');
+    setIsAuthenticated(false);
+    await client.clearStore();
   };
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, logout }}>
+    <AuthContext.Provider value={{ token: null, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

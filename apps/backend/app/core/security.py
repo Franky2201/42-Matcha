@@ -63,16 +63,16 @@ def verify_password_reset_token(token: str) -> str | None:
 
 
 def get_current_user_id(request: Request) -> int | None:
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
+    token = request.cookies.get("token")
+
+    if not token:
         return None
 
-    token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
-        if user_id is None:
-            return None
-        return int(user_id)
-    except jwt.PyJWTError:
+        return int(user_id) if user_id else None
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
         return None

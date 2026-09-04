@@ -1,7 +1,7 @@
 import strawberry
 from flask import Flask, Request, Response, jsonify
 from flask_cors import CORS
-from strawberry.flask.views import AsyncGraphQLView
+from strawberry.flask.views import GraphQLView
 
 from app.core.database import GraphQLContext, get_db_pool
 from app.features.auth.resolver import AuthMutation
@@ -28,10 +28,10 @@ class Mutation(AuthMutation, UserMutation):
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 
-class CustomGraphQLView(AsyncGraphQLView):
-    async def get_context(self, request: Request, response: Response) -> GraphQLContext:
-        pool = await get_db_pool()
-        return GraphQLContext(db_pool=pool, request=request)
+class CustomGraphQLView(GraphQLView):
+    def get_context(self, request: Request, response: Response) -> GraphQLContext:
+        pool = get_db_pool()
+        return GraphQLContext(db_pool=pool, request=request, response=response)
 
 
 app = Flask(__name__)

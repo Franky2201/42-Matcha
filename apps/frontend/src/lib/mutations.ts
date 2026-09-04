@@ -23,6 +23,12 @@ export const REGISTER_MUTATION: TypedDocumentNode<RegisterMutationData, Register
   }
 `;
 
+export const LOGOUT_MUTATION = gql`
+  mutation Logout {
+    logout
+  }
+`;
+
 export const FORGOT_PASSWORD_MUTATION: TypedDocumentNode<ForgotPasswordMutationData, ForgotPasswordMutationVariables> = gql`
   mutation RequestPasswordReset($email: String!) {
     requestPasswordReset(email: $email)

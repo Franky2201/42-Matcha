@@ -30,48 +30,59 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-4">Mot de passe oublié</h1>
-      <p className="text-gray-600 mb-8 text-center max-w-sm">
-        Entrez votre adresse email pour recevoir un lien de réinitialisation.
-      </p>
+    <section className="relative flex min-h-screen w-full items-center justify-center bg-[url('https://images.pexels.com/photos/14208568/pexels-photo-14208568.jpeg')] bg-cover bg-center p-4">
+      <div className="relative z-10 flex w-full max-w-md flex-col rounded-3xl border border-white/50 bg-white/60 px-6 py-12 backdrop-blur-2xl sm:px-10">
+        <div className="mx-auto w-full">
+          <h1>
+            Mot de passe oublié
+          </h1>
+          <p className="mt-4 mb-6 text-base">
+            Entrez votre adresse email pour recevoir un lien de réinitialisation.
+          </p>
 
-      {error && (
-        <div className="mb-4 text-red-600 font-semibold text-center max-w-sm">
-          {error}
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="mb-4 rounded-xl bg-red-100 p-3 text-center text-sm font-medium text-red-600">
+                {error}
+              </div>
+            )}
+            {message && (
+              <div className="mb-4 rounded-xl bg-green-100 p-3 text-center text-sm font-medium text-green-600">
+                {message}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <p className="mb-2 block">Email</p>
+                <input
+                  className="block h-12 w-full appearance-none rounded-xl bg-white px-4 py-2 font-medium text-neutral-600 placeholder-neutral-400 duration-200 focus:outline-hidden focus:ring-2 focus:ring-neutral-300 sm:text-sm"
+                  id="email"
+                  placeholder="m@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  type="email"
+                />
+              </div>
+
+              <div className="col-span-full pt-2">
+                <button
+                  className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 font-medium text-white duration-200 hover:bg-primary-hover focus:ring-2 focus:ring-black focus:ring-offset-2 disabled:opacity-50"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? 'Envoi en cours...' : 'Envoyer le lien'}
+                </button>
+              </div>
+            </div>
+
+            <Link to="/login" className="mx-auto mt-6 flex justify-center text-center font-medium text-neutral-600 hover:text-neutral-800 leading-tight duration-200">
+              Retour à la connexion
+            </Link>
+          </form>
         </div>
-      )}
-
-      {message && (
-        <div className="mb-4 text-green-600 font-semibold text-center max-w-sm">
-          {message}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="w-full max-w-sm flex flex-col gap-4">
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border border-black rounded focus:outline-none"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'Envoi en cours...' : 'Envoyer le lien'}
-        </button>
-      </form>
-
-      <div className="mt-6 flex flex-col items-center gap-2 text-sm">
-        <Link to="/login" className="hover:underline">
-          Retour à la connexion
-        </Link>
       </div>
-    </div>
+    </section>
   );
 }

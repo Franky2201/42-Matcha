@@ -2,8 +2,8 @@ import { type User } from "./users"
 
 export interface LoginMutationData {
 	login: {
-	  token: string | null;
-	  message: string;
+		token: string | null;
+		message: string;
 	};
 }
 
@@ -13,26 +13,26 @@ export interface LoginMutationVariables {
 }
 
 export interface AuthState {
-	token: string | null;
+	token: null;
 	isAuthenticated: boolean;
 }
 
 export interface AuthContextType extends AuthState {
-	login: (token: string) => void;
+	login: () => void;
 	logout: () => void;
 }
 
 export interface RegisterMutationData {
-    register: {
-        user: User | null;
-        message: string;
-    };
+	register: {
+		user: User | null;
+		message: string;
+	};
 }
 
 export interface RegisterMutationVariables {
-    email: string;
-    username: string;
-    firstname: string;
-    lastname: string;
-    password: string;
+	email: string;
+	username: string;
+	firstname: string;
+	lastname: string;
+	password: string;
 }
