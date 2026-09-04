@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { CurrentUser } from '../types/ui';
 
 interface HeaderProps {
@@ -8,11 +9,11 @@ export function Header({ user }: HeaderProps) {
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-olive-200 bg-olive-100 px-4 py-3 backdrop-blur-xl md:px-8">
 			<div className="mx-auto flex max-w-6xl items-center justify-between">
-				<div className="text-2xl font-bold tracking-tighter text-neutral-900">
+				<Link to="/" className="text-2xl font-bold tracking-tighter text-neutral-900">
 					Matcha<span className="text-primary">.</span>
-				</div>
+				</Link>
 
-				<div className="flex items-center gap-4">
+				<Link to="/profile" className="flex items-center gap-4 cursor-pointer hover:opacity-90 transition">
 					<div className="flex flex-col items-end">
 						<span className="text-sm font-semibold text-neutral-900">
 							{user.username}
@@ -28,7 +29,7 @@ export function Header({ user }: HeaderProps) {
 							className="h-full w-full object-cover"
 						/>
 					</div>
-				</div>
+				</Link>
 			</div>
 		</header>
 	);
