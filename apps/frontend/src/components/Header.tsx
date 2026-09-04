@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import type { CurrentUser } from '../types/ui';
+import { useUser } from '../context/UserContext';
 
-interface HeaderProps {
-	user: CurrentUser;
-}
+export function Header() {
+	const { user } = useUser();
 
-export function Header({ user }: HeaderProps) {
+	if (!user) return null;
+
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-olive-200 bg-olive-100 px-4 py-3 backdrop-blur-xl md:px-8">
 			<div className="mx-auto flex max-w-6xl items-center justify-between">

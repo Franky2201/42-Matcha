@@ -12,4 +12,6 @@ export interface CurrentUser {
 	username: string;
 	rating: number;
 	avatarUrl: string;
+	firstname: string;
+	lastname: string;
 }
