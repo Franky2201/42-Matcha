@@ -1,4 +1,47 @@
-import { Navigate } from 'react-router-dom';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { FilterSection } from '../components/Filter';
+import { ProfileStack } from '../components/Stack';
+import type { CurrentUser, MockProfile } from '../types/ui';
+
+const mockUser: CurrentUser = {
+  username: "Michel",
+  rating: 4.2,
+  avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
+};
+
+const mockProfile: MockProfile = {
+  id: "1",
+  name: "Sophie",
+  age: 26,
+  distance: 3,
+  rating: 4.8,
+  tags: ["vegan", "art", "voyage"],
+  imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+};
+
+export default function Home() {
+  return (
+    <div className="flex min-h-screen flex-col bg-white bg-cover bg-center bg-fixed">
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <Header user={mockUser} />
+
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
+          <FilterSection />
+
+          <div className="flex-1 flex items-center justify-center py-4">
+            <ProfileStack profile={mockProfile} />
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+
+/* import { Navigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { useAuth } from '../hooks/useAuth';
 import { LOGOUT_MUTATION } from '../lib/mutations';
@@ -62,3 +105,4 @@ export default function Home() {
     </div>
   );
 }
+ */
