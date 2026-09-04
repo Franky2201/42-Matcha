@@ -1,3 +1,5 @@
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { FilterSection } from '../components/Filter';
@@ -16,7 +18,12 @@ const mockProfile: MockProfile = {
 };
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
   const { user } = useUser();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (!user) return null;
 
