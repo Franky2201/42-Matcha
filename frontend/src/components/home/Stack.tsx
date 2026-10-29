@@ -1,4 +1,4 @@
-import type { MockProfile } from '../types/ui';
+import type { MockProfile } from '../../types/ui';
 
 interface ProfileStackProps {
 	profile: MockProfile;
