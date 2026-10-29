@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { ME_QUERY } from '../lib/queries';
 import { useAuth } from '../hooks/useAuth';
@@ -13,11 +13,17 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, logout } = useAuth();
 
-	const { data, loading } = useQuery(ME_QUERY, {
+	const { data, loading, error } = useQuery(ME_QUERY, {
 		skip: !isAuthenticated,
 	});
+
+	useEffect(() => {
+		if (isAuthenticated && !loading && (error || (data && !data.me))) {
+			logout();
+		}
+	}, [isAuthenticated, loading, error, data, logout]);
 
 	const user: CurrentUser | null = data?.me ? {
 		username: data.me.username,
@@ -29,8 +35,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 	if (loading && isAuthenticated) {
 		return (
-			<div className="flex min-h-screen items-center justify-center bg-white">
-				<p className="font-medium text-neutral-500">Chargement de votre session...</p>
+			<div className="flex min-h-screen items-center justify-center bg-slate-900">
+				<p className="font-medium text-white">Chargement de votre session...</p>
 			</div>
 		);
 	}
