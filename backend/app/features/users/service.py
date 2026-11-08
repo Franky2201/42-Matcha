@@ -3,6 +3,7 @@ import json
 import os
 import re
 import uuid
+
 from flask import Request
 
 from app.core.mailer import send_password_reset_email, send_verification_email
@@ -52,7 +53,13 @@ def register_user(
     token = create_email_verification_token(email)
     send_verification_email(email, token)
 
-    user = User(tags=user_record.get("tags", []), photos=user_record.get("photos", []), **{k: v for k, v in user_record.items() if k not in ["tags", "photos"]})
+    user_kwargs = {k: v for k, v in user_record.items() if k not in ["tags", "photos"]}
+    user = User(
+        tags=user_record.get("tags", []),
+        photos=user_record.get("photos", []),
+        **user_kwargs,
+    )
+
     return UserPayload(
         user=user, message="Registration successful. Please check your emails."
     )
@@ -67,7 +74,12 @@ def get_me(pool, request: Request) -> User | None:
     if not user_record:
         return None
 
-    return User(tags=user_record.get("tags", []), photos=user_record.get("photos", []), **{k: v for k, v in user_record.items() if k not in ["tags", "photos"]})
+    user_kwargs = {k: v for k, v in user_record.items() if k not in ["tags", "photos"]}
+    return User(
+        tags=user_record.get("tags", []),
+        photos=user_record.get("photos", []),
+        **user_kwargs,
+    )
 
 
 def process_password_reset_request(pool, email: str) -> str:
@@ -126,7 +138,7 @@ def process_update_profile(
         raise ValueError("Invalid preference")
     if biography and len(biography) > 500:
         raise ValueError("Biography too long")
-    
+
     tags = tags or []
     tags = [tag.strip().lower() for tag in tags if tag.strip()]
 
@@ -135,7 +147,7 @@ def process_update_profile(
     new_photo_idx = 0
 
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    
+
     for item in mapping:
         if item == "NEW":
             if new_photos and new_photo_idx < len(new_photos):
@@ -172,4 +184,9 @@ def process_update_profile(
     if not user_record:
         raise Exception("User not found")
 
-    return User(tags=user_record.get("tags", []), photos=user_record.get("photos", []), **{k: v for k, v in user_record.items() if k not in ["tags", "photos"]})
+    user_kwargs = {k: v for k, v in user_record.items() if k not in ["tags", "photos"]}
+    return User(
+        tags=user_record.get("tags", []),
+        photos=user_record.get("photos", []),
+        **user_kwargs,
+    )
