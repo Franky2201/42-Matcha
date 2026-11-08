@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { ME_QUERY } from '../services/user';
@@ -27,10 +26,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
 	const user: CurrentUser | null = data?.me ? {
 		username: data.me.username,
+		email: data.me.email,
 		rating: data.me.fameRating || 0,
-		avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
+		avatarUrl: data.me.photos?.[0] || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
 		firstname: data.me.firstname,
 		lastname: data.me.lastname,
+		gender: data.me.gender || '',
+		preference: data.me.preference || '',
+		biography: data.me.biography || '',
+		tags: data.me.tags || [],
+		photos: data.me.photos || [],
 	} : null;
 
 	if (loading && isAuthenticated) {
