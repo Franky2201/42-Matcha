@@ -1,8 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, type ReactNode } from 'react';
 import { useApolloClient } from '@apollo/client/react';
-import { LOGOUT_MUTATION } from '../lib/mutations';
-import type { AuthContextType } from '../types/auth';
+import { LOGOUT_MUTATION } from '../services/auth';
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -30,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token: null, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

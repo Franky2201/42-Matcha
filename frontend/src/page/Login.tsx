@@ -2,7 +2,7 @@ import { useState, type SVGProps } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
 import { useAuth } from '../hooks/useAuth';
-import { LOGIN_MUTATION } from '../lib/mutations';
+import { LOGIN_MUTATION } from '../services/auth';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');

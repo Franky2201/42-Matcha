@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery } from '@apollo/client/react';
-import { ME_QUERY } from '../lib/queries';
+import { ME_QUERY } from '../services/user';
 import { useAuth } from '../hooks/useAuth';
 import type { CurrentUser } from '../types/ui';
 

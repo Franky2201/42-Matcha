@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
-import { RESET_PASSWORD_MUTATION } from '../lib/mutations';
+import { RESET_PASSWORD_MUTATION } from '../services/user';
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
