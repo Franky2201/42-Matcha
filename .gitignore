@@ -69,3 +69,5 @@ coverage/
 # AI tools
 .antigravitycli/
 .agents/
+
+backend/uploads/

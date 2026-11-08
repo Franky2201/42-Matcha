@@ -10,8 +10,14 @@ export interface MockProfile {
 
 export interface CurrentUser {
 	username: string;
+	email: string;
 	rating: number;
 	avatarUrl: string;
 	firstname: string;
 	lastname: string;
+	gender: string;
+	preference: string;
+	biography: string;
+	tags: string[];
+	photos: string[];
 }

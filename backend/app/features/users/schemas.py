@@ -21,6 +21,8 @@ class User:
     is_online: bool
     updated_at: datetime
     created_at: datetime
+    tags: list[str]
+    photos: list[str]
 
 
 @strawberry.type

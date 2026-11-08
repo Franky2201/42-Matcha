@@ -1,9 +1,9 @@
 import { gql, type TypedDocumentNode } from '@apollo/client';
 import type {
-	MeQuery, MeQueryVariables,
-	RequestPasswordResetMutation, RequestPasswordResetMutationVariables,
-	ResetPasswordMutation, ResetPasswordMutationVariables,
-	VerifyEmailMutation, VerifyEmailMutationVariables
+  MeQuery, MeQueryVariables,
+  RequestPasswordResetMutation, RequestPasswordResetMutationVariables,
+  ResetPasswordMutation, ResetPasswordMutationVariables,
+  VerifyEmailMutation, VerifyEmailMutationVariables
 } from '../types/graphql';
 
 export const ME_QUERY: TypedDocumentNode<MeQuery, MeQueryVariables> = gql`
@@ -15,6 +15,11 @@ export const ME_QUERY: TypedDocumentNode<MeQuery, MeQueryVariables> = gql`
       firstname
       lastname
       fameRating
+      gender
+      preference
+      biography
+      tags
+      photos
     }
   }
 `;

@@ -1,5 +1,7 @@
+import os
+
 import strawberry
-from flask import Flask, Request, Response, jsonify
+from flask import Flask, Request, Response, jsonify, send_from_directory
 from flask_cors import CORS
 from strawberry.flask.views import GraphQLView
 
@@ -46,6 +48,11 @@ CORS(
 @app.route("/")
 def root():
     return jsonify({"status": "ok"})
+
+
+@app.route("/uploads/<path:filename>")
+def serve_uploads(filename):
+    return send_from_directory(os.path.abspath("uploads"), filename)
 
 
 app.add_url_rule(

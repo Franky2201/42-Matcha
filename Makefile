@@ -25,6 +25,7 @@ help:
 	@printf "  add-py <pkg>   Installer un paquet Python et màj requirements.txt\n"
 	@printf "  add-js <pkg>   Installer un paquet npm frontend\n"
 	@printf "  types          Générer les types TS depuis le schéma GraphQL\n"
+	@printf "  format         Trier les imports et formater le code backend\n"
 	@printf "  clean          Nettoyer les fichiers temporaires\n"
 	@printf "  fclean         Suppression totale (volumes, images, node_modules, .venv)\n"
 	@printf "  re             fclean + up\n"
@@ -55,6 +56,12 @@ types: backend/.venv frontend/node_modules
 	@rm -f frontend/schema.graphql
 	@printf "$(GREEN)Types mis à jour avec succès !$(NO_COLOR)\n"
 
+format: backend/.venv
+	@printf "$(GREEN)Formatage du backend (Ruff)...$(NO_COLOR)\n"
+	@$(VENV_RUFF) check --fix backend
+	@$(VENV_RUFF) format backend
+	@printf "$(GREEN)Formatage terminé !$(NO_COLOR)\n"
+
 up: frontend/node_modules backend/.venv
 	@$(COMPOSE) up -d --build
 
@@ -75,4 +82,4 @@ fclean: clean
 
 re: fclean up
 
-.PHONY: all help add-py add-js up down logs clean fclean re types
+.PHONY: all help add-py add-js up down logs clean fclean re types format
