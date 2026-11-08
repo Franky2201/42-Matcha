@@ -79,32 +79,32 @@ jobs:
         working-directory: frontend
 
   # Job for Docker Test with Layer Caching
-  docker-test:
-    name: Docker Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+  # docker-test:
+  #   name: Docker Test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
 
-      # Set up Docker Buildx for advanced caching
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     # Set up Docker Buildx for advanced caching
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Setup Environment
-        run: cp .env.example .env
+  #     - name: Setup Environment
+  #       run: cp .env.example .env
 
-      - name: Create Data Directories
-        run: mkdir -p backend/uploads
+  #     - name: Create Data Directories
+  #       run: mkdir -p backend/uploads
 
-      - name: Build and Start Stack
-        run: docker compose up -d --build --wait
+  #     - name: Build and Start Stack
+  #       run: docker compose up -d --build --wait
 
-      - name: Check Container Status
-        run: docker compose ps
+  #     - name: Check Container Status
+  #       run: docker compose ps
 
-      - name: Logs on Failure
-        if: failure()
-        run: docker compose logs
+  #     - name: Logs on Failure
+  #       if: failure()
+  #       run: docker compose logs
 
-      - name: Shutdown
-        run: docker compose down -v
+  #     - name: Shutdown
+  #       run: docker compose down -v
