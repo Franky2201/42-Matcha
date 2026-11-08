@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { ME_QUERY } from '../services/user';

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { UPDATE_PROFILE_MUTATION } from '../services/profile';
@@ -18,7 +19,7 @@ export interface ProfileContextType {
 	formData: ProfileData;
 	errors: Record<string, string>;
 	isSubmitting: boolean;
-	updateField: (field: keyof ProfileData, value: any) => void;
+	updateField: <K extends keyof ProfileData>(field: K, value: ProfileData[K]) => void;
 	submitForm: (e: React.FormEvent) => Promise<void>;
 }
 
@@ -43,6 +44,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (user) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setFormData((prev) => {
 				const prefilledPhotos = [...prev.photos];
 				user.photos.forEach((url, i) => {
@@ -63,12 +65,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 		}
 	}, [user]);
 
-	const updateField = (field: keyof ProfileData, value: any) => {
+	const updateField = <K extends keyof ProfileData>(field: K, value: ProfileData[K]) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
-		if (errors[field]) {
+		if (errors[field as string]) {
 			setErrors((prev) => {
 				const newErrors = { ...prev };
-				delete newErrors[field];
+				delete newErrors[field as string];
 				return newErrors;
 			});
 		}

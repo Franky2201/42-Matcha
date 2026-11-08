@@ -1,6 +1,6 @@
 import { gql, type TypedDocumentNode } from '@apollo/client';
 
-export const UPDATE_PROFILE_MUTATION: TypedDocumentNode<any, any> = gql`
+export const UPDATE_PROFILE_MUTATION: TypedDocumentNode<Record<string, unknown>, Record<string, unknown>> = gql`
   mutation UpdateProfile(
     $firstname: String!
     $lastname: String!
