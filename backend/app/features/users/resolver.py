@@ -8,6 +8,7 @@ from app.features.users.service import (
     get_me,
     process_password_reset,
     process_password_reset_request,
+    process_update_profile,
     register_user,
 )
 
@@ -47,6 +48,34 @@ class UserMutation:
     @strawberry.mutation
     def reset_password(self, info: Info, token: str, new_password: str) -> str:
         return process_password_reset(info.context.db_pool, token, new_password)
+
+    @strawberry.mutation
+    def update_profile(
+        self,
+        info: Info,
+        firstname: str,
+        lastname: str,
+        email: str,
+        gender: str | None = None,
+        preference: str | None = None,
+        biography: str | None = None,
+        tags: list[str] | None = None,
+        new_photos: list[str] | None = None,
+        photo_mapping: str | None = None,
+    ) -> User:
+        return process_update_profile(
+            info.context.db_pool,
+            info.context.request,
+            firstname,
+            lastname,
+            email,
+            gender,
+            preference,
+            biography,
+            tags,
+            new_photos,
+            photo_mapping,
+        )
 
 
 @strawberry.type

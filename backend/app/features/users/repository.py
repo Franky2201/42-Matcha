@@ -16,9 +16,11 @@ def create_user_in_db(
             username,
             firstname,
             lastname,
-            password_hash
+            password_hash,
+            tags,
+            photos
         )
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, '{}', '{}')
         RETURNING
             id,
             email,
@@ -35,9 +37,10 @@ def create_user_in_db(
             last_connection,
             is_online,
             updated_at,
-            created_at;
+            created_at,
+            tags,
+            photos;
     """
-
     conn = pool.getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -61,7 +64,7 @@ def get_user_by_id(pool, user_id: int) -> dict | None:
         SELECT id, email, username, lastname, firstname, is_verified, 
                gender::text, preference::text, biography, fame_rating, 
                latitude, longitude, last_connection, is_online, 
-               updated_at, created_at
+               updated_at, created_at, tags, photos
         FROM users 
         WHERE id = %s;
     """
@@ -109,5 +112,77 @@ def update_user_password(pool, email: str, new_password_hash: str) -> bool:
             record = cur.fetchone()
             conn.commit()
             return bool(record)
+    finally:
+        pool.putconn(conn)
+
+
+def update_user_profile_in_db(
+    pool,
+    user_id: int,
+    firstname: str,
+    lastname: str,
+    email: str,
+    gender: str | None,
+    preference: str | None,
+    biography: str | None,
+    tags: list[str],
+    photos: list[str],
+) -> dict | None:
+    query = """
+        UPDATE users SET
+            firstname = %s,
+            lastname = %s,
+            email = %s,
+            gender = %s,
+            preference = %s,
+            biography = %s,
+            tags = %s,
+            photos = %s,
+            updated_at = NOW()
+        WHERE id = %s
+        RETURNING
+            id,
+            email,
+            username,
+            lastname,
+            firstname,
+            is_verified,
+            gender::text,
+            preference::text,
+            biography,
+            fame_rating,
+            latitude,
+            longitude,
+            last_connection,
+            is_online,
+            updated_at,
+            created_at,
+            tags,
+            photos;
+    """
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            try:
+                cur.execute(
+                    query,
+                    (
+                        firstname,
+                        lastname,
+                        email,
+                        gender,
+                        preference,
+                        biography,
+                        tags,
+                        photos,
+                        user_id,
+                    ),
+                )
+                record = cur.fetchone()
+                conn.commit()
+                return dict(record) if record else None
+            except errors.UniqueViolation:
+                conn.rollback()
+                raise ValueError("Email already in use")
     finally:
         pool.putconn(conn)
