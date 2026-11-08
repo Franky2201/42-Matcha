@@ -1,11 +1,9 @@
-# HTTP to HTTPS redirect
 server {
     listen 80;
     server_name ${DOMAIN_NAME};
     return 301 https://$host$request_uri;
 }
 
-# Main Application Server
 server {
     listen 443 ssl default_server;
     server_name ${DOMAIN_NAME};
@@ -13,7 +11,6 @@ server {
     ssl_certificate /etc/nginx/tls/server.crt;
     ssl_certificate_key /etc/nginx/tls/server.key;
 
-    # Modern SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
@@ -26,7 +23,6 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Reverse proxy for backend GraphQL and REST API
     location /graphql {
         proxy_pass http://backend:8000/graphql;
         proxy_http_version 1.1;
@@ -51,8 +47,16 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    location /uploads/ {
+        proxy_pass http://backend:8000/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
-    # Error handling
     error_page 500 502 503 504 /50x.html;
     location = /50x.html {
         root /usr/share/nginx/html;
