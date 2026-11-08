@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
-import { REGISTER_MUTATION } from '../lib/mutations';
+import { REGISTER_MUTATION } from '../services/auth';
 
 const FORBIDDEN_PASSWORDS = ['password', 'admin', 'qwerty', '123456', 'welcome', 'love'];
 

@@ -1,7 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, type ReactNode } from 'react';
 import { useApolloClient } from '@apollo/client/react';
-import type { AuthContextType } from '../types/auth';
+import { LOGOUT_MUTATION } from '../services/auth';
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -17,13 +23,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    localStorage.removeItem('isAuthenticated');
-    setIsAuthenticated(false);
-    await client.clearStore();
+    try {
+      await client.mutate({ mutation: LOGOUT_MUTATION });
+    } catch (error) {
+      console.error("Erreur serveur lors de la déconnexion", error);
+    } finally {
+      localStorage.removeItem('isAuthenticated');
+      setIsAuthenticated(false);
+      await client.clearStore();
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ token: null, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

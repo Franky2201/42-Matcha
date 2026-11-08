@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { FilterSection } from '../components/Filter';
-import { ProfileStack } from '../components/Stack';
+import { ProfileStack } from '../components/home/Stack';
 import { useUser } from '../context/UserContext';
 import type { MockProfile } from '../types/ui';
 

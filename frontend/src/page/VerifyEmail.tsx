@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
-import { VERIFY_EMAIL_MUTATION } from '../lib/mutations';
+import { VERIFY_EMAIL_MUTATION } from '../services/user';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();

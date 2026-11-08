@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client/react';
-import { FORGOT_PASSWORD_MUTATION } from '../lib/mutations';
+import { FORGOT_PASSWORD_MUTATION } from '../services/user';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');

@@ -118,6 +118,11 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 export type LogoutMutation = { logout: string };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number } | null };
+
 export type RequestPasswordResetMutationVariables = Exact<{
   email: string;
 }>;
@@ -139,8 +144,3 @@ export type ResetPasswordMutationVariables = Exact<{
 
 
 export type ResetPasswordMutation = { resetPassword: string };
-
-export type MeQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string } | null };
