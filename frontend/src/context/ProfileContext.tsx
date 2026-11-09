@@ -129,7 +129,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 					photoMapping: JSON.stringify(photoMapping),
 				},
 			});
-			alert('Profil mis à jour avec succès !');
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		} catch (err) {
 			console.error(err);
 			setErrors({ global: 'Erreur lors de la sauvegarde du profil. Vérifiez la console.' });
