@@ -8,40 +8,35 @@ import { useUser } from '../context/UserContext';
 import type { MockProfile } from '../types/ui';
 
 const mockProfile: MockProfile = {
-  id: "1",
-  name: "Sophie",
-  age: 26,
-  distance: 3,
-  rating: 4.8,
-  tags: ["vegan", "art", "voyage"],
-  imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+	id: "1",
+	name: "Sophie",
+	age: 26,
+	distance: 3,
+	rating: 4.8,
+	tags: ["vegan", "art", "voyage"],
+	imageUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
 };
 
 export default function Home() {
-  const { isAuthenticated } = useAuth();
-  const { user } = useUser();
+	const { isAuthenticated } = useAuth();
+	const { user } = useUser();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+	if (!isAuthenticated) return <Navigate to="/login" replace />;
+	if (!user) return null;
 
-  if (!user) return null;
+	return (
+		<div className="relative z-10 flex min-h-screen flex-col bg-zinc-200">
+			<Header />
 
-  return (
-    <div className="flex min-h-screen flex-col bg-white bg-cover bg-center bg-fixed">
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <Header />
+			<main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
+				<FilterSection />
 
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
-          <FilterSection />
+				<section className="flex flex-1 items-center justify-center py-4">
+					<ProfileStack profile={mockProfile} />
+				</section>
+			</main>
 
-          <div className="flex-1 flex items-center justify-center py-4">
-            <ProfileStack profile={mockProfile} />
-          </div>
-        </main>
-
-        <Footer />
-      </div>
-    </div>
-  );
+			<Footer />
+		</div>
+	);
 }
