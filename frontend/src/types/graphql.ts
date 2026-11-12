@@ -11,7 +11,6 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** Date with time (isoformat) */
   DateTime: { input: unknown; output: unknown; }
 };
 
@@ -28,6 +27,7 @@ export type Mutation = {
   register: UserPayload;
   requestPasswordReset: Scalars['String']['output'];
   resetPassword: Scalars['String']['output'];
+  updateLocation: User;
   updateProfile: User;
   verifyEmail: Scalars['String']['output'];
 };
@@ -56,6 +56,12 @@ export type MutationRequestPasswordResetArgs = {
 export type MutationResetPasswordArgs = {
   newPassword: Scalars['String']['input'];
   token: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateLocationArgs = {
+  latitude: Scalars['Float']['input'];
+  longitude: Scalars['Float']['input'];
 };
 
 
@@ -152,7 +158,7 @@ export type UpdateProfileMutation = { updateProfile: { id: number, firstname: st
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string> } | null };
+export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string>, latitude: number | null, longitude: number | null } | null };
 
 export type RequestPasswordResetMutationVariables = Exact<{
   email: string;
@@ -175,3 +181,11 @@ export type ResetPasswordMutationVariables = Exact<{
 
 
 export type ResetPasswordMutation = { resetPassword: string };
+
+export type UpdateLocationMutationVariables = Exact<{
+  latitude: number;
+  longitude: number;
+}>;
+
+
+export type UpdateLocationMutation = { updateLocation: { id: number, latitude: number | null, longitude: number | null } };

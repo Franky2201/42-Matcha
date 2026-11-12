@@ -20,4 +20,6 @@ export interface CurrentUser {
 	biography: string;
 	tags: string[];
 	photos: string[];
+	latitude?: number | null;
+	longitude?: number | null;
 }
