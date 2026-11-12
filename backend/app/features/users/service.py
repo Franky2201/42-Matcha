@@ -21,6 +21,8 @@ from app.features.users.repository import (
     update_user_password,
     update_user_profile_in_db,
     update_user_location_in_db,
+    get_all_users_for_explore,
+    get_explore_profiles_count,
 )
 from app.features.users.schemas import User, UserPayload
 
@@ -219,3 +221,34 @@ def process_update_location(
         photos=user_record.get("photos", []),
         **user_kwargs,
     )
+
+
+def get_explore_profiles(pool, request: Request, limit: int, offset: int) -> list[User]:
+    user_id = get_current_user_id(request)
+    if not user_id:
+        raise Exception("Unauthorized")
+    
+    records = get_all_users_for_explore(pool, user_id, limit, offset)
+    users = []
+    
+    valid_keys = User.__annotations__.keys()
+    
+    for record in records:
+        user_kwargs = {
+            k: v for k, v in record.items() 
+            if k in valid_keys and k not in ["tags", "photos"]
+        }
+        users.append(User(
+            tags=record.get("tags", []),
+            photos=record.get("photos", []),
+            **user_kwargs
+        ))
+        
+    return users
+
+
+def get_explore_profiles_count_service(pool, request: Request) -> int:
+    user_id = get_current_user_id(request)
+    if not user_id:
+        raise Exception("Unauthorized")
+    return get_explore_profiles_count(pool, user_id)

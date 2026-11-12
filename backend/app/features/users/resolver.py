@@ -11,6 +11,8 @@ from app.features.users.service import (
     process_update_location,
     process_update_profile,
     register_user,
+    get_explore_profiles,
+    get_explore_profiles_count_service,
 )
 
 
@@ -95,3 +97,11 @@ class UserQuery:
     @strawberry.field
     def me(self, info: Info) -> User | None:
         return get_me(info.context.db_pool, info.context.request)
+
+    @strawberry.field
+    def explore_profiles(self, info: Info, limit: int = 12, offset: int = 0) -> list[User]:
+        return get_explore_profiles(info.context.db_pool, info.context.request, limit, offset)
+
+    @strawberry.field
+    def explore_profiles_count(self, info: Info) -> int:
+        return get_explore_profiles_count_service(info.context.db_pool, info.context.request)

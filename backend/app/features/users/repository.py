@@ -208,3 +208,31 @@ def update_user_location_in_db(pool, user_id: int, latitude: float, longitude: f
             return dict(record) if record else None
     finally:
         pool.putconn(conn)
+
+
+def get_all_users_for_explore(pool, current_user_id: int, limit: int, offset: int) -> list[dict]:
+    query = """
+        SELECT * FROM users
+        WHERE id != %s
+        ORDER BY created_at DESC
+        LIMIT %s OFFSET %s;
+    """
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (current_user_id, limit, offset))
+            return [dict(record) for record in cur.fetchall()]
+    finally:
+        pool.putconn(conn)
+
+
+def get_explore_profiles_count(pool, current_user_id: int) -> int:
+    query = "SELECT COUNT(*) FROM users WHERE id != %s;"
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (current_user_id,))
+            record = cur.fetchone()
+            return record[0] if record else 0
+    finally:
+        pool.putconn(conn)
