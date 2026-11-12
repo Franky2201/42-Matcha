@@ -188,7 +188,9 @@ def update_user_profile_in_db(
         pool.putconn(conn)
 
 
-def update_user_location_in_db(pool, user_id: int, latitude: float, longitude: float) -> dict | None:
+def update_user_location_in_db(
+    pool, user_id: int, latitude: float, longitude: float
+) -> dict | None:
     query = """
         UPDATE users 
         SET latitude = %s, longitude = %s, updated_at = NOW()
@@ -210,7 +212,9 @@ def update_user_location_in_db(pool, user_id: int, latitude: float, longitude: f
         pool.putconn(conn)
 
 
-def get_all_users_for_explore(pool, current_user_id: int, limit: int, offset: int) -> list[dict]:
+def get_all_users_for_explore(
+    pool, current_user_id: int, limit: int, offset: int
+) -> list[dict]:
     query = """
         SELECT * FROM users
         WHERE id != %s

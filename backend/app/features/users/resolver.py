@@ -5,14 +5,14 @@ from app.core.security import verify_email_token
 from app.features.users.repository import verify_user_in_db
 from app.features.users.schemas import User, UserPayload
 from app.features.users.service import (
+    get_explore_profiles,
+    get_explore_profiles_count_service,
     get_me,
     process_password_reset,
     process_password_reset_request,
     process_update_location,
     process_update_profile,
     register_user,
-    get_explore_profiles,
-    get_explore_profiles_count_service,
 )
 
 
@@ -81,9 +81,7 @@ class UserMutation:
         )
 
     @strawberry.mutation
-    def update_location(
-        self, info: Info, latitude: float, longitude: float
-    ) -> User:
+    def update_location(self, info: Info, latitude: float, longitude: float) -> User:
         return process_update_location(
             info.context.db_pool,
             info.context.request,
@@ -99,9 +97,15 @@ class UserQuery:
         return get_me(info.context.db_pool, info.context.request)
 
     @strawberry.field
-    def explore_profiles(self, info: Info, limit: int = 12, offset: int = 0) -> list[User]:
-        return get_explore_profiles(info.context.db_pool, info.context.request, limit, offset)
+    def explore_profiles(
+        self, info: Info, limit: int = 12, offset: int = 0
+    ) -> list[User]:
+        return get_explore_profiles(
+            info.context.db_pool, info.context.request, limit, offset
+        )
 
     @strawberry.field
     def explore_profiles_count(self, info: Info) -> int:
-        return get_explore_profiles_count_service(info.context.db_pool, info.context.request)
+        return get_explore_profiles_count_service(
+            info.context.db_pool, info.context.request
+        )
