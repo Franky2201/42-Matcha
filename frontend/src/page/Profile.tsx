@@ -6,6 +6,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { ProfileProvider } from '../context/ProfileContext';
 import { ProfileForm } from '../components/profile/ProfileForm';
+import { LocationSettings } from '../components/profile/LocationSettings';
 
 export default function ProfilePage() {
 	const { isAuthenticated, logout } = useAuth();
@@ -100,9 +101,7 @@ export default function ProfilePage() {
 									<p className="mb-4 text-sm text-neutral-600">
 										Votre positionnement est requis pour le système de matching. Vous pouvez utiliser le GPS ou définir votre ville manuellement.
 									</p>
-									<div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-black/10 bg-black/5 text-neutral-500">
-										[Composant Map/GPS à venir]
-									</div>
+									<LocationSettings />
 								</div>
 							</>
 						) : (
