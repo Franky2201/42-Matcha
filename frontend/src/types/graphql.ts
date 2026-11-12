@@ -84,8 +84,16 @@ export type MutationVerifyEmailArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  exploreProfiles: Array<User>;
+  exploreProfilesCount: Scalars['Int']['output'];
   me?: Maybe<User>;
   ping: Scalars['String']['output'];
+};
+
+
+export type QueryExploreProfilesArgs = {
+  limit?: Scalars['Int']['input'];
+  offset?: Scalars['Int']['input'];
 };
 
 export type User = {
@@ -139,6 +147,14 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutMutation = { logout: string };
+
+export type ExploreProfilesQueryVariables = Exact<{
+  limit: number;
+  offset: number;
+}>;
+
+
+export type ExploreProfilesQuery = { exploreProfilesCount: number, exploreProfiles: Array<{ id: number, firstname: string, lastname: string, fameRating: number, latitude: number | null, longitude: number | null, tags: Array<string>, photos: Array<string> }> };
 
 export type UpdateProfileMutationVariables = Exact<{
   firstname: string;
