@@ -3,7 +3,7 @@ import os
 import json
 import random
 import urllib.request
-from werkzeug.security import generate_password_hash
+import bcrypt
 import psycopg2
 from psycopg2.extras import execute_values
 
@@ -12,7 +12,8 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 password = sys.argv[1]
-password_hash = generate_password_hash(password)
+pwd_bytes = password.encode('utf-8')
+password_hash = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode('utf-8')
 
 DB_HOST = os.environ.get("POSTGRES_HOST", "matcha-db")
 DB_PORT = os.environ.get("POSTGRES_PORT", "5432")
