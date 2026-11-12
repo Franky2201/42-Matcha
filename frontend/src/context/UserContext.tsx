@@ -37,6 +37,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		biography: data.me.biography || '',
 		tags: data.me.tags || [],
 		photos: data.me.photos || [],
+		latitude: data.me.latitude,
+		longitude: data.me.longitude,
 	} : null;
 
 	if (loading && isAuthenticated) {
