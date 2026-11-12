@@ -11,7 +11,6 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** Date with time (isoformat) */
   DateTime: { input: unknown; output: unknown; }
 };
 
@@ -28,6 +27,7 @@ export type Mutation = {
   register: UserPayload;
   requestPasswordReset: Scalars['String']['output'];
   resetPassword: Scalars['String']['output'];
+  updateLocation: User;
   updateProfile: User;
   verifyEmail: Scalars['String']['output'];
 };
@@ -59,6 +59,12 @@ export type MutationResetPasswordArgs = {
 };
 
 
+export type MutationUpdateLocationArgs = {
+  latitude: Scalars['Float']['input'];
+  longitude: Scalars['Float']['input'];
+};
+
+
 export type MutationUpdateProfileArgs = {
   biography?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['String']['input'];
@@ -78,8 +84,16 @@ export type MutationVerifyEmailArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  exploreProfiles: Array<User>;
+  exploreProfilesCount: Scalars['Int']['output'];
   me?: Maybe<User>;
   ping: Scalars['String']['output'];
+};
+
+
+export type QueryExploreProfilesArgs = {
+  limit?: Scalars['Int']['input'];
+  offset?: Scalars['Int']['input'];
 };
 
 export type User = {
@@ -134,6 +148,14 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 export type LogoutMutation = { logout: string };
 
+export type ExploreProfilesQueryVariables = Exact<{
+  limit: number;
+  offset: number;
+}>;
+
+
+export type ExploreProfilesQuery = { exploreProfilesCount: number, exploreProfiles: Array<{ id: number, firstname: string, lastname: string, fameRating: number, latitude: number | null, longitude: number | null, tags: Array<string>, photos: Array<string> }> };
+
 export type UpdateProfileMutationVariables = Exact<{
   firstname: string;
   lastname: string;
@@ -152,7 +174,7 @@ export type UpdateProfileMutation = { updateProfile: { id: number, firstname: st
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string> } | null };
+export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string>, latitude: number | null, longitude: number | null } | null };
 
 export type RequestPasswordResetMutationVariables = Exact<{
   email: string;
@@ -175,3 +197,11 @@ export type ResetPasswordMutationVariables = Exact<{
 
 
 export type ResetPasswordMutation = { resetPassword: string };
+
+export type UpdateLocationMutationVariables = Exact<{
+  latitude: number;
+  longitude: number;
+}>;
+
+
+export type UpdateLocationMutation = { updateLocation: { id: number, latitude: number | null, longitude: number | null } };

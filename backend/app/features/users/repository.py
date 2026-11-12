@@ -186,3 +186,57 @@ def update_user_profile_in_db(
                 raise ValueError("Email already in use")
     finally:
         pool.putconn(conn)
+
+
+def update_user_location_in_db(
+    pool, user_id: int, latitude: float, longitude: float
+) -> dict | None:
+    query = """
+        UPDATE users 
+        SET latitude = %s, longitude = %s, updated_at = NOW()
+        WHERE id = %s
+        RETURNING
+            id, email, username, lastname, firstname, is_verified,
+            gender::text, preference::text, biography, fame_rating,
+            latitude, longitude, last_connection, is_online,
+            updated_at, created_at, tags, photos;
+    """
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (latitude, longitude, user_id))
+            record = cur.fetchone()
+            conn.commit()
+            return dict(record) if record else None
+    finally:
+        pool.putconn(conn)
+
+
+def get_all_users_for_explore(
+    pool, current_user_id: int, limit: int, offset: int
+) -> list[dict]:
+    query = """
+        SELECT * FROM users
+        WHERE id != %s
+        ORDER BY created_at DESC
+        LIMIT %s OFFSET %s;
+    """
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (current_user_id, limit, offset))
+            return [dict(record) for record in cur.fetchall()]
+    finally:
+        pool.putconn(conn)
+
+
+def get_explore_profiles_count(pool, current_user_id: int) -> int:
+    query = "SELECT COUNT(*) FROM users WHERE id != %s;"
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (current_user_id,))
+            record = cur.fetchone()
+            return record[0] if record else 0
+    finally:
+        pool.putconn(conn)

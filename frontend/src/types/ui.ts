@@ -8,6 +8,15 @@ export interface MockProfile {
 	imageUrl: string;
 }
 
+export interface GridProfile {
+	id: string;
+	firstname: string;
+	lastname: string;
+	distance: number;
+	tags: string[];
+	avatarUrl: string;
+}
+
 export interface CurrentUser {
 	username: string;
 	email: string;
@@ -20,4 +29,6 @@ export interface CurrentUser {
 	biography: string;
 	tags: string[];
 	photos: string[];
+	latitude?: number | null;
+	longitude?: number | null;
 }

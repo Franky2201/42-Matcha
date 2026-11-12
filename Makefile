@@ -36,6 +36,7 @@ frontend/node_modules:
 
 backend/.venv: backend/requirements.txt
 	@python3 -m venv backend/.venv
+	# @python3 -m virtualenv backend/.venv
 	@$(VENV_PIP) install --quiet -r backend/requirements.txt
 	@touch backend/.venv
 
@@ -62,6 +63,14 @@ format: backend/.venv
 	@$(VENV_RUFF) format backend
 	@printf "$(GREEN)Formatage terminé !$(NO_COLOR)\n"
 
+seed:
+	@if [ -z "$(PASS)" ]; then \
+		printf "$(RED)Usage: make seed PASS=tonmotdepasse$(NO_COLOR)\n"; \
+	else \
+		printf "$(GREEN)Lancement du script de seed...$(NO_COLOR)\n"; \
+		docker exec -it matcha-backend-1 python seed.py "$(PASS)"; \
+	fi
+
 up: frontend/node_modules backend/.venv
 	@$(COMPOSE) up -d --build
 
@@ -82,4 +91,4 @@ fclean: clean
 
 re: fclean up
 
-.PHONY: all help add-py add-js up down logs clean fclean re types format
+.PHONY: all help add-py add-js up down logs clean fclean re types format seed

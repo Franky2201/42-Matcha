@@ -1,5 +1,5 @@
 import { gql, type TypedDocumentNode } from '@apollo/client';
-import type {
+import type { 
   MeQuery, MeQueryVariables,
   RequestPasswordResetMutation, RequestPasswordResetMutationVariables,
   ResetPasswordMutation, ResetPasswordMutationVariables,
@@ -20,6 +20,8 @@ export const ME_QUERY: TypedDocumentNode<MeQuery, MeQueryVariables> = gql`
       biography
       tags
       photos
+      latitude
+      longitude
     }
   }
 `;
@@ -39,5 +41,15 @@ export const VERIFY_EMAIL_MUTATION: TypedDocumentNode<VerifyEmailMutation, Verif
 export const RESET_PASSWORD_MUTATION: TypedDocumentNode<ResetPasswordMutation, ResetPasswordMutationVariables> = gql`
   mutation ResetPassword($token: String!, $newPassword: String!) {
     resetPassword(token: $token, newPassword: $newPassword)
+  }
+`;
+
+export const UPDATE_LOCATION_MUTATION = gql`
+  mutation UpdateLocation($latitude: Float!, $longitude: Float!) {
+    updateLocation(latitude: $latitude, longitude: $longitude) {
+      id
+      latitude
+      longitude
+    }
   }
 `;
