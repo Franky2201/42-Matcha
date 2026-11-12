@@ -8,6 +8,7 @@ from app.features.users.service import (
     get_me,
     process_password_reset,
     process_password_reset_request,
+    process_update_location,
     process_update_profile,
     register_user,
 )
@@ -75,6 +76,17 @@ class UserMutation:
             tags,
             new_photos,
             photo_mapping,
+        )
+
+    @strawberry.mutation
+    def update_location(
+        self, info: Info, latitude: float, longitude: float
+    ) -> User:
+        return process_update_location(
+            info.context.db_pool,
+            info.context.request,
+            latitude,
+            longitude,
         )
 
 

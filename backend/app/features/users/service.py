@@ -20,6 +20,7 @@ from app.features.users.repository import (
     get_user_by_id,
     update_user_password,
     update_user_profile_in_db,
+    update_user_location_in_db,
 )
 from app.features.users.schemas import User, UserPayload
 
@@ -185,6 +186,34 @@ def process_update_profile(
         raise Exception("User not found")
 
     user_kwargs = {k: v for k, v in user_record.items() if k not in ["tags", "photos"]}
+    return User(
+        tags=user_record.get("tags", []),
+        photos=user_record.get("photos", []),
+        **user_kwargs,
+    )
+
+
+def process_update_location(
+    pool,
+    request: Request,
+    latitude: float,
+    longitude: float,
+) -> User:
+    user_id = get_current_user_id(request)
+    if not user_id:
+        raise Exception("Unauthorized")
+
+    if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        raise ValueError("Invalid coordinates")
+
+    user_record = update_user_location_in_db(pool, user_id, latitude, longitude)
+    
+    if not user_record:
+        raise Exception("User not found")
+
+    user_kwargs = {
+        k: v for k, v in user_record.items() if k not in ["tags", "photos"]
+    }
     return User(
         tags=user_record.get("tags", []),
         photos=user_record.get("photos", []),

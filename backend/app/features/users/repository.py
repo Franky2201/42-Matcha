@@ -186,3 +186,25 @@ def update_user_profile_in_db(
                 raise ValueError("Email already in use")
     finally:
         pool.putconn(conn)
+
+
+def update_user_location_in_db(pool, user_id: int, latitude: float, longitude: float) -> dict | None:
+    query = """
+        UPDATE users 
+        SET latitude = %s, longitude = %s, updated_at = NOW()
+        WHERE id = %s
+        RETURNING
+            id, email, username, lastname, firstname, is_verified,
+            gender::text, preference::text, biography, fame_rating,
+            latitude, longitude, last_connection, is_online,
+            updated_at, created_at, tags, photos;
+    """
+    conn = pool.getconn()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (latitude, longitude, user_id))
+            record = cur.fetchone()
+            conn.commit()
+            return dict(record) if record else None
+    finally:
+        pool.putconn(conn)
