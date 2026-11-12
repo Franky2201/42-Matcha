@@ -27,6 +27,7 @@ export function LocationSettings() {
 
 	useEffect(() => {
 		if (lat !== null && lon !== null && !address) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			fetchAddress(lat, lon);
 		}
 	}, [lat, lon, address, fetchAddress]);
