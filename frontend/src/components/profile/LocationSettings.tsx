@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { useUser } from '../../context/UserContext';
 import { UPDATE_LOCATION_MUTATION } from '../../services/user';
@@ -15,21 +15,21 @@ export function LocationSettings() {
 	const [error, setError] = useState('');
 	const [successMsg, setSuccessMsg] = useState('');
 
-	useEffect(() => {
-		if (lat !== null && lon !== null && !address) {
-			fetchAddress(lat, lon);
-		}
-	}, [lat, lon, address]);
-
-	const fetchAddress = async (latitude: number, longitude: number) => {
+	const fetchAddress = useCallback(async (latitude: number, longitude: number) => {
 		try {
 			const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
 			const data = await res.json();
 			setAddress(data.address.city || data.address.town || data.address.village || data.address.suburb || 'Localisation personnalisée');
-		} catch (err) {
+		} catch {
 			setAddress('Coordonnées enregistrées');
 		}
-	};
+	}, []);
+
+	useEffect(() => {
+		if (lat !== null && lon !== null && !address) {
+			fetchAddress(lat, lon);
+		}
+	}, [lat, lon, address, fetchAddress]);
 
 	const handleGPS = () => {
 		setError('');
@@ -79,7 +79,7 @@ export function LocationSettings() {
 			} else {
 				setError("Lieu introuvable. Essayez une autre saisie.");
 			}
-		} catch (err) {
+		} catch {
 			setError("Erreur lors de la recherche.");
 		} finally {
 			setIsLoading(false);
@@ -93,7 +93,7 @@ export function LocationSettings() {
 		try {
 			await updateLocation({ variables: { latitude: lat, longitude: lon } });
 			setSuccessMsg("Localisation sauvegardée avec succès.");
-		} catch (err) {
+		} catch {
 			setError("Erreur lors de la sauvegarde.");
 		}
 	};
@@ -104,7 +104,7 @@ export function LocationSettings() {
 				<button
 					onClick={handleGPS}
 					disabled={isLoading}
-					className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-white transition hover:bg-primary-hover focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 cursor-pointer"
+					className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-bold text-white transition hover:bg-primary-hover focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
 					Utiliser le GPS
@@ -120,7 +120,7 @@ export function LocationSettings() {
 					<button
 						type="submit"
 						disabled={isLoading || !searchQuery.trim()}
-						className="flex items-center justify-center rounded-xl bg-neutral-800 px-4 py-3 font-bold text-white transition hover:bg-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50 cursor-pointer"
+						className="flex cursor-pointer items-center justify-center rounded-xl bg-neutral-800 px-4 py-3 font-bold text-white transition hover:bg-neutral-900 focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 disabled:opacity-50"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
 					</button>
@@ -147,11 +147,11 @@ export function LocationSettings() {
 				<div className="flex h-[250px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-white/50 text-neutral-500">
 					<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-50"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
 					<span className="font-medium">Aucune localisation définie</span>
-					<span className="text-xs mt-1 text-red-400 font-semibold">Requis pour le système de matching</span>
+					<span className="mt-1 text-xs font-semibold text-red-400">Requis pour le système de matching</span>
 				</div>
 			)}
 
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-white/60 p-4 shadow-sm border border-white/40">
+			<div className="flex flex-col gap-4 rounded-xl border border-white/40 bg-white/60 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<p className="text-xs font-bold uppercase tracking-wider text-neutral-500">Position actuelle</p>
 					<p className="font-bold text-neutral-900">{address || 'Non définie'}</p>
@@ -159,7 +159,7 @@ export function LocationSettings() {
 				<button
 					onClick={handleSave}
 					disabled={isSaving || lat === null || lon === null}
-					className="rounded-xl bg-primary px-6 py-2.5 font-bold text-white transition hover:bg-primary-hover focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 cursor-pointer"
+					className="cursor-pointer rounded-xl bg-primary px-6 py-2.5 font-bold text-white transition hover:bg-primary-hover focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
 				>
 					{isSaving ? 'Enregistrement...' : 'Enregistrer la position'}
 				</button>

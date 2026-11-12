@@ -8,7 +8,7 @@ import { FilterSection } from '../components/home/Filter';
 import { ProfileStack } from '../components/home/Stack';
 import { ProfileGrid } from '../components/home/ProfileGrid';
 import { useUser } from '../context/UserContext';
-import { EXPLORE_PROFILES_QUERY } from '../services/explore';
+import { EXPLORE_PROFILES_QUERY, type ExploreProfileNode } from '../services/explore';
 import { calculateDistance } from '../utils/distance';
 import type { GridProfile, MockProfile } from '../types/ui';
 
@@ -34,7 +34,7 @@ export default function Home() {
 	const totalCount = data?.exploreProfilesCount || 0;
 	const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
-	const gridProfiles: GridProfile[] = exploreProfiles.map((p: any) => {
+	const gridProfiles: GridProfile[] = exploreProfiles.map((p: ExploreProfileNode) => {
 		const distance = user.latitude && user.longitude && p.latitude && p.longitude
 			? calculateDistance(user.latitude, user.longitude, p.latitude, p.longitude)
 			: 0;
