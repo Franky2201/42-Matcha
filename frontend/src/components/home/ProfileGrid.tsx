@@ -65,7 +65,7 @@ export function ProfileGrid({ profiles, currentPage, totalPages, onPageChange }:
 					<button
 						onClick={() => onPageChange(currentPage - 1)}
 						disabled={currentPage === 1}
-						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white/60 font-bold text-neutral-700 shadow-sm backdrop-blur-sm transition hover:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary disabled:opacity-40"
+						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white font-bold text-neutral-800 shadow-md transition hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
 					</button>
@@ -77,7 +77,7 @@ export function ProfileGrid({ profiles, currentPage, totalPages, onPageChange }:
 					<button
 						onClick={() => onPageChange(currentPage + 1)}
 						disabled={currentPage >= totalPages}
-						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white/60 font-bold text-neutral-700 shadow-sm backdrop-blur-sm transition hover:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary disabled:opacity-40"
+						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white font-bold text-neutral-800 shadow-md transition hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
 					</button>
