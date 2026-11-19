@@ -33,6 +33,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		avatarUrl: getImageUrl(data.me.photos[0]),
 		firstname: data.me.firstname,
 		lastname: data.me.lastname,
+		age: data.me.age,
 		gender: data.me.gender || '',
 		preference: data.me.preference || '',
 		biography: data.me.biography || '',

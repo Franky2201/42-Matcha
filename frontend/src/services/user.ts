@@ -1,5 +1,5 @@
 import { gql, type TypedDocumentNode } from '@apollo/client';
-import type { 
+import type {
   MeQuery, MeQueryVariables,
   RequestPasswordResetMutation, RequestPasswordResetMutationVariables,
   ResetPasswordMutation, ResetPasswordMutationVariables,
@@ -14,6 +14,7 @@ export const ME_QUERY: TypedDocumentNode<MeQuery, MeQueryVariables> = gql`
       email
       firstname
       lastname
+      age
       fameRating
       gender
       preference

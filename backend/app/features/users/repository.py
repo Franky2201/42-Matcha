@@ -28,6 +28,7 @@ def create_user_in_db(
             lastname,
             firstname,
             is_verified,
+            age,
             gender::text,
             preference::text,
             biography,
@@ -62,9 +63,9 @@ def create_user_in_db(
 def get_user_by_id(pool, user_id: int) -> dict | None:
     query = """
         SELECT id, email, username, lastname, firstname, is_verified, 
-               gender::text, preference::text, biography, fame_rating, 
-               latitude, longitude, last_connection, is_online, 
-               updated_at, created_at, tags, photos
+               age, gender::text, preference::text, biography,
+               fame_rating, latitude, longitude, last_connection, 
+               is_online, updated_at, created_at, tags, photos
         FROM users 
         WHERE id = %s;
     """
@@ -122,6 +123,7 @@ def update_user_profile_in_db(
     firstname: str,
     lastname: str,
     email: str,
+    age: int,
     gender: str | None,
     preference: str | None,
     biography: str | None,
@@ -133,6 +135,7 @@ def update_user_profile_in_db(
             firstname = %s,
             lastname = %s,
             email = %s,
+            age = %s,
             gender = %s,
             preference = %s,
             biography = %s,
@@ -141,43 +144,16 @@ def update_user_profile_in_db(
             updated_at = NOW()
         WHERE id = %s
         RETURNING
-            id,
-            email,
-            username,
-            lastname,
-            firstname,
-            is_verified,
-            gender::text,
-            preference::text,
-            biography,
-            fame_rating,
-            latitude,
-            longitude,
-            last_connection,
-            is_online,
-            updated_at,
-            created_at,
-            tags,
-            photos;
+            id, email, username, lastname, firstname, is_verified, age,
+            gender::text, preference::text, biography, fame_rating,
+            latitude, longitude, last_connection, is_online,
+            updated_at, created_at, tags, photos;
     """
     conn = pool.getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             try:
-                cur.execute(
-                    query,
-                    (
-                        firstname,
-                        lastname,
-                        email,
-                        gender,
-                        preference,
-                        biography,
-                        tags,
-                        photos,
-                        user_id,
-                    ),
-                )
+                cur.execute(query, (firstname, lastname, email, age, gender, preference, biography, tags, photos, user_id))
                 record = cur.fetchone()
                 conn.commit()
                 return dict(record) if record else None
@@ -197,9 +173,9 @@ def update_user_location_in_db(
         WHERE id = %s
         RETURNING
             id, email, username, lastname, firstname, is_verified,
-            gender::text, preference::text, biography, fame_rating,
-            latitude, longitude, last_connection, is_online,
-            updated_at, created_at, tags, photos;
+            age, gender::text, preference::text, biography,
+            fame_rating, latitude, longitude, last_connection,
+            is_online, updated_at, created_at, tags, photos;
     """
     conn = pool.getconn()
     try:
@@ -208,35 +184,5 @@ def update_user_location_in_db(
             record = cur.fetchone()
             conn.commit()
             return dict(record) if record else None
-    finally:
-        pool.putconn(conn)
-
-
-def get_all_users_for_explore(
-    pool, current_user_id: int, limit: int, offset: int
-) -> list[dict]:
-    query = """
-        SELECT * FROM users
-        WHERE id != %s
-        ORDER BY created_at DESC
-        LIMIT %s OFFSET %s;
-    """
-    conn = pool.getconn()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, (current_user_id, limit, offset))
-            return [dict(record) for record in cur.fetchall()]
-    finally:
-        pool.putconn(conn)
-
-
-def get_explore_profiles_count(pool, current_user_id: int) -> int:
-    query = "SELECT COUNT(*) FROM users WHERE id != %s;"
-    conn = pool.getconn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(query, (current_user_id,))
-            record = cur.fetchone()
-            return record[0] if record else 0
     finally:
         pool.putconn(conn)

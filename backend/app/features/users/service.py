@@ -17,8 +17,6 @@ from app.core.security import (
 from app.features.users.repository import (
     check_user_exists_by_email,
     create_user_in_db,
-    get_all_users_for_explore,
-    get_explore_profiles_count,
     get_user_by_id,
     update_user_location_in_db,
     update_user_password,
@@ -120,6 +118,7 @@ def process_update_profile(
     firstname: str,
     lastname: str,
     email: str,
+    age: int,
     gender: str | None,
     preference: str | None,
     biography: str | None,
@@ -135,6 +134,8 @@ def process_update_profile(
         raise ValueError("Invalid email format")
     if not firstname.strip() or not lastname.strip():
         raise ValueError("Firstname and lastname are required")
+    if age < 18 or age > 99:
+        raise ValueError("L'âge doit être compris entre 18 et 99 ans")
     if gender not in ["male", "female", "other", None]:
         raise ValueError("Invalid gender")
     if preference not in ["male", "female", "all", None]:
@@ -175,6 +176,7 @@ def process_update_profile(
             firstname,
             lastname,
             email,
+            age,
             gender,
             preference,
             biography,
@@ -219,37 +221,3 @@ def process_update_location(
         photos=user_record.get("photos", []),
         **user_kwargs,
     )
-
-
-def get_explore_profiles(pool, request: Request, limit: int, offset: int) -> list[User]:
-    user_id = get_current_user_id(request)
-    if not user_id:
-        raise Exception("Unauthorized")
-
-    records = get_all_users_for_explore(pool, user_id, limit, offset)
-    users = []
-
-    valid_keys = User.__annotations__.keys()
-
-    for record in records:
-        user_kwargs = {
-            k: v
-            for k, v in record.items()
-            if k in valid_keys and k not in ["tags", "photos"]
-        }
-        users.append(
-            User(
-                tags=record.get("tags", []),
-                photos=record.get("photos", []),
-                **user_kwargs,
-            )
-        )
-
-    return users
-
-
-def get_explore_profiles_count_service(pool, request: Request) -> int:
-    user_id = get_current_user_id(request)
-    if not user_id:
-        raise Exception("Unauthorized")
-    return get_explore_profiles_count(pool, user_id)

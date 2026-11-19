@@ -14,6 +14,7 @@ export interface CurrentUser {
 	avatarUrl: string;
 	firstname: string;
 	lastname: string;
+	age: number;
 	gender: string;
 	preference: string;
 	biography: string;

@@ -5,8 +5,6 @@ from app.core.security import verify_email_token
 from app.features.users.repository import verify_user_in_db
 from app.features.users.schemas import User, UserPayload
 from app.features.users.service import (
-    get_explore_profiles,
-    get_explore_profiles_count_service,
     get_me,
     process_password_reset,
     process_password_reset_request,
@@ -55,30 +53,36 @@ class UserMutation:
     @strawberry.mutation
     def update_profile(
         self,
-        info: Info,
+        info: strawberry.Info,
         firstname: str,
         lastname: str,
         email: str,
+        age: int,
         gender: str | None = None,
         preference: str | None = None,
         biography: str | None = None,
         tags: list[str] | None = None,
         new_photos: list[str] | None = None,
         photo_mapping: str | None = None,
-    ) -> User:
-        return process_update_profile(
-            info.context.db_pool,
-            info.context.request,
-            firstname,
-            lastname,
-            email,
-            gender,
-            preference,
-            biography,
-            tags,
-            new_photos,
-            photo_mapping,
-        )
+    ) -> UserPayload:
+        try:
+            user = process_update_profile(
+                pool=info.context.db_pool,
+                request=info.context.request,
+                firstname=firstname,
+                lastname=lastname,
+                email=email,
+                age=age,
+                gender=gender,
+                preference=preference,
+                biography=biography,
+                tags=tags,
+                new_photos=new_photos,
+                photo_mapping=photo_mapping,
+            )
+            return UserPayload(user=user, message="Profil mis à jour avec succès")
+        except Exception as e:
+            return UserPayload(user=None, message=str(e))
 
     @strawberry.mutation
     def update_location(self, info: Info, latitude: float, longitude: float) -> User:
@@ -95,17 +99,3 @@ class UserQuery:
     @strawberry.field
     def me(self, info: Info) -> User | None:
         return get_me(info.context.db_pool, info.context.request)
-
-    @strawberry.field
-    def explore_profiles(
-        self, info: Info, limit: int = 12, offset: int = 0
-    ) -> list[User]:
-        return get_explore_profiles(
-            info.context.db_pool, info.context.request, limit, offset
-        )
-
-    @strawberry.field
-    def explore_profiles_count(self, info: Info) -> int:
-        return get_explore_profiles_count_service(
-            info.context.db_pool, info.context.request
-        )

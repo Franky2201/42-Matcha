@@ -20,6 +20,18 @@ export type AuthPayload = {
   token?: Maybe<Scalars['String']['output']>;
 };
 
+export type ExploreProfileNode = {
+  __typename?: 'ExploreProfileNode';
+  fameRating?: Maybe<Scalars['Float']['output']>;
+  firstname: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastname: Scalars['String']['output'];
+  latitude?: Maybe<Scalars['Float']['output']>;
+  longitude?: Maybe<Scalars['Float']['output']>;
+  photos?: Maybe<Array<Scalars['String']['output']>>;
+  tags?: Maybe<Array<Scalars['String']['output']>>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   login: AuthPayload;
@@ -28,7 +40,7 @@ export type Mutation = {
   requestPasswordReset: Scalars['String']['output'];
   resetPassword: Scalars['String']['output'];
   updateLocation: User;
-  updateProfile: User;
+  updateProfile: UserPayload;
   verifyEmail: Scalars['String']['output'];
 };
 
@@ -66,6 +78,7 @@ export type MutationUpdateLocationArgs = {
 
 
 export type MutationUpdateProfileArgs = {
+  age: Scalars['Int']['input'];
   biography?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['String']['input'];
   firstname: Scalars['String']['input'];
@@ -84,7 +97,7 @@ export type MutationVerifyEmailArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  exploreProfiles: Array<User>;
+  exploreProfiles: Array<ExploreProfileNode>;
   exploreProfilesCount: Scalars['Int']['output'];
   me?: Maybe<User>;
   ping: Scalars['String']['output'];
@@ -92,12 +105,31 @@ export type Query = {
 
 
 export type QueryExploreProfilesArgs = {
-  limit?: Scalars['Int']['input'];
-  offset?: Scalars['Int']['input'];
+  ageMax?: InputMaybe<Scalars['Int']['input']>;
+  ageMin?: InputMaybe<Scalars['Int']['input']>;
+  distanceMax?: InputMaybe<Scalars['Float']['input']>;
+  fameMax?: InputMaybe<Scalars['Float']['input']>;
+  fameMin?: InputMaybe<Scalars['Float']['input']>;
+  limit: Scalars['Int']['input'];
+  offset: Scalars['Int']['input'];
+  sortBy?: InputMaybe<Scalars['String']['input']>;
+  sortOrder?: InputMaybe<Scalars['String']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryExploreProfilesCountArgs = {
+  ageMax?: InputMaybe<Scalars['Int']['input']>;
+  ageMin?: InputMaybe<Scalars['Int']['input']>;
+  distanceMax?: InputMaybe<Scalars['Float']['input']>;
+  fameMax?: InputMaybe<Scalars['Float']['input']>;
+  fameMin?: InputMaybe<Scalars['Float']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type User = {
   __typename?: 'User';
+  age: Scalars['Int']['output'];
   biography?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['DateTime']['output'];
   email: Scalars['String']['output'];
@@ -151,15 +183,24 @@ export type LogoutMutation = { logout: string };
 export type ExploreProfilesQueryVariables = Exact<{
   limit: number;
   offset: number;
+  ageMin?: number | null | undefined;
+  ageMax?: number | null | undefined;
+  fameMin?: number | null | undefined;
+  fameMax?: number | null | undefined;
+  distanceMax?: number | null | undefined;
+  tags?: Array<string> | string | null | undefined;
+  sortBy?: string | null | undefined;
+  sortOrder?: string | null | undefined;
 }>;
 
 
-export type ExploreProfilesQuery = { exploreProfilesCount: number, exploreProfiles: Array<{ id: number, firstname: string, lastname: string, fameRating: number, latitude: number | null, longitude: number | null, tags: Array<string>, photos: Array<string> }> };
+export type ExploreProfilesQuery = { exploreProfilesCount: number, exploreProfiles: Array<{ id: string, firstname: string, lastname: string, fameRating: number | null, latitude: number | null, longitude: number | null, tags: Array<string> | null, photos: Array<string> | null }> };
 
 export type UpdateProfileMutationVariables = Exact<{
   firstname: string;
   lastname: string;
   email: string;
+  age: number;
   gender?: string | null | undefined;
   preference?: string | null | undefined;
   biography?: string | null | undefined;
@@ -169,12 +210,12 @@ export type UpdateProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateProfileMutation = { updateProfile: { id: number, firstname: string, lastname: string, email: string, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string> } };
+export type UpdateProfileMutation = { updateProfile: { message: string, user: { id: number, firstname: string, lastname: string, email: string, age: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string> } | null } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string>, latitude: number | null, longitude: number | null } | null };
+export type MeQuery = { me: { id: number, username: string, email: string, firstname: string, lastname: string, age: number, fameRating: number, gender: string | null, preference: string, biography: string | null, tags: Array<string>, photos: Array<string>, latitude: number | null, longitude: number | null } | null };
 
 export type RequestPasswordResetMutationVariables = Exact<{
   email: string;

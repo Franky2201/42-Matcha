@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     firstname VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255),
     is_verified BOOLEAN DEFAULT FALSE,
+    age INT DEFAULT 18,
     gender user_gender,
     preference user_preference DEFAULT 'all',
     biography TEXT,
@@ -25,20 +26,22 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (email, username, lastname, firstname, password_hash)
+INSERT INTO users (email, username, lastname, firstname, password_hash, age)
 VALUES (
     'juhanse@matcha.com',
     'juhanse',
     'Hanse',
     'Julien',
-    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK'
+    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK',
+    25
 ) ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO users (email, username, lastname, firstname, password_hash)
+INSERT INTO users (email, username, lastname, firstname, password_hash, age)
 VALUES (
     'michel@matcha.com',
     'michel',
     'Michel',
     'Michel',
-    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK'
+    '$2a$12$TCaK2eUoU3gHk3uZJ872..de0VXoYsaBevl5p7h0jJv/zTAnx8hGK',
+    30
 ) ON CONFLICT (email) DO NOTHING;

@@ -11,6 +11,7 @@ class User:
     lastname: str
     firstname: str
     is_verified: bool
+    age: int
     gender: str | None
     preference: str
     biography: str | None
