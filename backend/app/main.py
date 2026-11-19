@@ -10,6 +10,7 @@ from app.core.oauth import init_oauth
 from app.features.auth.resolver import AuthMutation
 from app.features.auth.rest import auth_bp
 from app.features.users.resolver import UserMutation, UserQuery
+from app.features.explore.resolver import ExploreQuery
 
 origins = [
     "http://localhost:5173",
@@ -18,7 +19,7 @@ origins = [
 
 
 @strawberry.type
-class Query(UserQuery):
+class Query(UserQuery, ExploreQuery):
     @strawberry.field
     def ping(self) -> str:
         return "pong"

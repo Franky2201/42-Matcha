@@ -8,6 +8,7 @@ export interface ProfileData {
 	firstname: string;
 	lastname: string;
 	email: string;
+	age: number | '';
 	gender: string;
 	preference: string;
 	biography: string;
@@ -33,6 +34,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 		firstname: '',
 		lastname: '',
 		email: '',
+		age: '',
 		gender: '',
 		preference: '',
 		biography: '',
@@ -44,7 +46,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (user) {
-			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setFormData((prev) => {
 				const prefilledPhotos = [...prev.photos];
 				user.photos.forEach((url, i) => {
@@ -55,6 +56,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 					firstname: user.firstname,
 					lastname: user.lastname,
 					email: user.email,
+					age: user.age || '',
 					gender: user.gender || '',
 					preference: user.preference || '',
 					biography: user.biography || '',
@@ -83,11 +85,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 		if (!formData.firstname.trim()) newErrors.firstname = 'Le prénom est requis';
 		if (!formData.lastname.trim()) newErrors.lastname = 'Le nom est requis';
 		if (!emailRegex.test(formData.email)) newErrors.email = 'Email invalide';
+		if (!formData.age || formData.age < 18 || formData.age > 99) newErrors.age = 'L\'âge doit être compris entre 18 et 99 ans';
 		if (!formData.gender) newErrors.gender = 'Veuillez sélectionner un genre';
 		if (!formData.preference) newErrors.preference = 'Veuillez sélectionner une préférence';
 		if (formData.biography.length > 500) newErrors.biography = 'La biographie doit faire moins de 500 caractères';
 		if (formData.tags.length === 0) newErrors.tags = 'Ajoutez au moins un intérêt';
-		if (!formData.photos[0]) newErrors.photos = 'La photo de profil (première photo) est obligatoire';
+		if (!formData.photos[0]) newErrors.photos = 'La photo de profil est obligatoire';
 
 		setErrors(newErrors);
 		return Object.keys(newErrors).length === 0;
@@ -116,11 +119,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 				return null;
 			});
 
-			await updateProfile({
+			const response = await updateProfile({
 				variables: {
 					firstname: formData.firstname.trim(),
 					lastname: formData.lastname.trim(),
 					email: formData.email.trim(),
+					age: Number(formData.age),
 					gender: formData.gender || null,
 					preference: formData.preference || null,
 					biography: formData.biography.trim() || null,
@@ -129,10 +133,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 					photoMapping: JSON.stringify(photoMapping),
 				},
 			});
-			window.scrollTo({ top: 0, behavior: 'smooth' });
+
+			const data = response.data as any;
+
+			if (data?.updateProfile?.user) {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			} else {
+				setErrors({ global: data?.updateProfile?.message || 'Erreur lors de la sauvegarde.' });
+			}
 		} catch (err) {
 			console.error(err);
-			setErrors({ global: 'Erreur lors de la sauvegarde du profil. Vérifiez la console.' });
+			setErrors({ global: 'Erreur réseau lors de la sauvegarde du profil.' });
 		}
 	};
 
