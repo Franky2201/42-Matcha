@@ -153,7 +153,21 @@ def update_user_profile_in_db(
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             try:
-                cur.execute(query, (firstname, lastname, email, age, gender, preference, biography, tags, photos, user_id))
+                cur.execute(
+                    query,
+                    (
+                        firstname,
+                        lastname,
+                        email,
+                        age,
+                        gender,
+                        preference,
+                        biography,
+                        tags,
+                        photos,
+                        user_id,
+                    ),
+                )
                 record = cur.fetchone()
                 conn.commit()
                 return dict(record) if record else None

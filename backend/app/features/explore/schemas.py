@@ -1,13 +1,13 @@
 import strawberry
-from typing import List, Optional
+
 
 @strawberry.type
 class ExploreProfileNode:
     id: str
     firstname: str
     lastname: str
-    fameRating: Optional[float]
-    latitude: Optional[float]
-    longitude: Optional[float]
-    tags: Optional[List[str]]
-    photos: Optional[List[str]]
+    fameRating: float | None
+    latitude: float | None
+    longitude: float | None
+    tags: list[str] | None
+    photos: list[str] | None

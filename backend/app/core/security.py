@@ -5,7 +5,7 @@ import bcrypt
 import jwt
 from flask import Request
 
-SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "fallback_dev_jwt_key_pour_eviter_les_crashs")
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "fallback_dev_jwt_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

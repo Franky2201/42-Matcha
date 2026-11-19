@@ -9,8 +9,8 @@ from app.core.database import GraphQLContext, get_db_pool
 from app.core.oauth import init_oauth
 from app.features.auth.resolver import AuthMutation
 from app.features.auth.rest import auth_bp
-from app.features.users.resolver import UserMutation, UserQuery
 from app.features.explore.resolver import ExploreQuery
+from app.features.users.resolver import UserMutation, UserQuery
 
 origins = [
     "http://localhost:5173",
