@@ -26,16 +26,16 @@ export function ProfileGrid({ profiles, currentPage, totalPages, onPageChange }:
 								alt={`${profile.firstname} ${profile.lastname}`}
 								className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
 							/>
-							
+
 							<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity group-hover:opacity-100" />
 
 							<div className="absolute bottom-0 left-0 flex w-full flex-col p-4 text-white">
 								<h3 className="truncate text-lg font-bold leading-tight">
 									{profile.firstname} {profile.lastname}
 								</h3>
-								
+
 								<div className="mt-1 flex items-center gap-1 text-xs font-medium text-neutral-300">
-									<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+									<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
 									<span>À {profile.distance} km</span>
 								</div>
 
@@ -67,19 +67,19 @@ export function ProfileGrid({ profiles, currentPage, totalPages, onPageChange }:
 						disabled={currentPage === 1}
 						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white/60 font-bold text-neutral-700 shadow-sm backdrop-blur-sm transition hover:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary disabled:opacity-40"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
 					</button>
-					
+
 					<span className="min-w-[4rem] text-center text-sm font-semibold text-neutral-700">
 						{currentPage} / {totalPages}
 					</span>
-					
+
 					<button
 						onClick={() => onPageChange(currentPage + 1)}
 						disabled={currentPage >= totalPages}
 						className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-white/60 font-bold text-neutral-700 shadow-sm backdrop-blur-sm transition hover:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary disabled:opacity-40"
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
 					</button>
 				</div>
 			)}
