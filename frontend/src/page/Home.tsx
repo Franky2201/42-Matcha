@@ -7,23 +7,40 @@ import { Footer } from '../components/Footer';
 import { FilterSection } from '../components/home/Filter';
 import { ProfileGrid } from '../components/home/ProfileGrid';
 import { useUser } from '../context/UserContext';
+import { FilterProvider, useFilter } from '../context/FilterContext';
 import { EXPLORE_PROFILES_QUERY, type ExploreProfileNode } from '../services/explore';
 import { calculateDistance } from '../utils/distance';
-import type { GridProfile } from '../types/ui';
 import { getImageUrl } from '../utils/getImage';
+import type { GridProfile } from '../types/ui';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function Home() {
+function HomeContent() {
 	const { isAuthenticated } = useAuth();
 	const { user } = useUser();
+	const { filters } = useFilter();
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const { data, loading } = useQuery(EXPLORE_PROFILES_QUERY, {
-		variables: { limit: ITEMS_PER_PAGE, offset: (currentPage - 1) * ITEMS_PER_PAGE },
+	const { data, loading, error } = useQuery(EXPLORE_PROFILES_QUERY, {
+		variables: {
+			limit: ITEMS_PER_PAGE,
+			offset: (currentPage - 1) * ITEMS_PER_PAGE,
+			ageMin: filters.ageMin || null,
+			ageMax: filters.ageMax || null,
+			fameMin: filters.fameMin || null,
+			fameMax: filters.fameMax || null,
+			distanceMax: filters.distanceMax || null,
+			tags: filters.tags.length > 0 ? filters.tags : null,
+			sortBy: filters.sortBy,
+			sortOrder: filters.sortOrder
+		},
 		skip: !isAuthenticated || !user,
 		fetchPolicy: 'cache-and-network',
 	});
+
+	if (error) {
+		console.error("Erreur GraphQL Explore:", error);
+	}
 
 	if (!isAuthenticated) return <Navigate to="/login" replace />;
 	if (!user) return null;
@@ -53,6 +70,11 @@ export default function Home() {
 
 			<main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
 				<FilterSection />
+				{error && (
+					<div className="p-4 text-center font-bold text-red-500">
+						Erreur de chargement: {error.message}
+					</div>
+				)}
 
 				<section className="flex flex-1 flex-col py-8">
 					{loading && gridProfiles.length === 0 ? (
@@ -72,5 +94,13 @@ export default function Home() {
 
 			<Footer />
 		</div>
+	);
+}
+
+export default function Home() {
+	return (
+		<FilterProvider>
+			<HomeContent />
+		</FilterProvider>
 	);
 }
