@@ -98,6 +98,7 @@ export default function LoginPage() {
 
             <div className="flex flex-col gap-3">
               <button
+                onClick={() => window.location.href = 'http://localhost:8000/api/auth/login/google'}
                 aria-label="Se connecter avec Google"
                 className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3 font-medium duration-200 hover:bg-white/50 focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 type="button"

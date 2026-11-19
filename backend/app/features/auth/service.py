@@ -14,7 +14,6 @@ def authenticate_user(pool, username: str, password: str) -> tuple[any, str | No
         return AuthPayload(token=None, message="Identifiants invalides"), None
 
     token = create_access_token(subject=user["id"])
-
     return AuthPayload(token=None, message="Connexion réussie"), token
 
 
@@ -25,9 +24,17 @@ def process_oauth_user(pool, provider: str, user_info: dict, provider_token: str
         base_username = user_info['login']
         firstname = user_info['first_name']
         lastname = user_info['last_name']
-        
         image_data = user_info.get('image', {})
         photo_url = image_data.get('versions', {}).get('large') or image_data.get('link')
+        id_column = 'oauth_42_id'
+    elif provider == 'google':
+        oauth_id = str(user_info['sub'])
+        email = user_info['email']
+        base_username = email.split('@')[0]
+        firstname = user_info.get('given_name', '')
+        lastname = user_info.get('family_name', '')
+        photo_url = user_info.get('picture')
+        id_column = 'oauth_google_id'
     else:
         raise ValueError("Unsupported provider")
 
@@ -40,7 +47,7 @@ def process_oauth_user(pool, provider: str, user_info: dict, provider_token: str
         
         try:
             headers = {'User-Agent': 'Mozilla/5.0'}
-            if provider_token:
+            if provider_token and provider == '42':
                 headers['Authorization'] = f"Bearer {provider_token}"
                 
             response = requests.get(photo_url, headers=headers, timeout=10)
@@ -54,15 +61,14 @@ def process_oauth_user(pool, provider: str, user_info: dict, provider_token: str
     conn = pool.getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT * FROM users WHERE oauth_42_id = %s OR email = %s", (oauth_id, email))
+            query = f"SELECT * FROM users WHERE {id_column} = %s OR email = %s"
+            cur.execute(query, (oauth_id, email))
             record = cur.fetchone()
             
             if record:
-                if not record.get('oauth_42_id'):
-                    cur.execute(
-                        "UPDATE users SET oauth_42_id = %s, is_verified = TRUE WHERE id = %s RETURNING *",
-                        (oauth_id, record['id'])
-                    )
+                if not record.get(id_column):
+                    update_query = f"UPDATE users SET {id_column} = %s, is_verified = TRUE WHERE id = %s RETURNING *"
+                    cur.execute(update_query, (oauth_id, record['id']))
                     record = cur.fetchone()
                     conn.commit()
                 return dict(record)
@@ -74,13 +80,14 @@ def process_oauth_user(pool, provider: str, user_info: dict, provider_token: str
                     break
                 username = f"{base_username}{random.randint(100, 999)}"
             
-            cur.execute("""
+            insert_query = f"""
                 INSERT INTO users (
                     email, username, firstname, lastname, 
-                    oauth_42_id, is_verified, photos
+                    {id_column}, is_verified, photos
                 ) VALUES (%s, %s, %s, %s, %s, TRUE, %s)
                 RETURNING *;
-            """, (email, username, firstname, lastname, oauth_id, [final_photo] if final_photo else []))
+            """
+            cur.execute(insert_query, (email, username, firstname, lastname, oauth_id, [final_photo] if final_photo else []))
             new_record = cur.fetchone()
             conn.commit()
             return dict(new_record)
