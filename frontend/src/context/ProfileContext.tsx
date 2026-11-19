@@ -3,6 +3,7 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { UPDATE_PROFILE_MUTATION } from '../services/profile';
 import { useUser } from './UserContext';
+import type { UpdateProfileMutation } from '../types/graphql';
 
 export interface ProfileData {
 	firstname: string;
@@ -28,7 +29,7 @@ export const ProfileContext = createContext<ProfileContextType | undefined>(unde
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
 	const { user } = useUser();
-	const [updateProfile, { loading: isSubmitting }] = useMutation(UPDATE_PROFILE_MUTATION);
+	const [updateProfile, { loading: isSubmitting }] = useMutation<UpdateProfileMutation>(UPDATE_PROFILE_MUTATION);
 
 	const [formData, setFormData] = useState<ProfileData>({
 		firstname: '',
@@ -46,6 +47,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (user) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
 			setFormData((prev) => {
 				const prefilledPhotos = [...prev.photos];
 				user.photos.forEach((url, i) => {
@@ -134,7 +136,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 				},
 			});
 
-			const data = response.data as any;
+			const data = response.data;
 
 			if (data?.updateProfile?.user) {
 				window.scrollTo({ top: 0, behavior: 'smooth' });
