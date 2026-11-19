@@ -5,11 +5,10 @@ from flask import Flask, Request, Response, jsonify, send_from_directory
 from flask_cors import CORS
 from strawberry.flask.views import GraphQLView
 
-from app.core.oauth import init_oauth
-from app.features.auth.rest import auth_bp
-
 from app.core.database import GraphQLContext, get_db_pool
+from app.core.oauth import init_oauth
 from app.features.auth.resolver import AuthMutation
+from app.features.auth.rest import auth_bp
 from app.features.users.resolver import UserMutation, UserQuery
 
 origins = [
@@ -40,7 +39,7 @@ class CustomGraphQLView(GraphQLView):
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default-dev-secret-key')
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-dev-secret-key")
 
 CORS(
     app,
@@ -49,8 +48,8 @@ CORS(
 )
 
 
-pool = get_db_pool() 
-app.config['DB_POOL'] = pool
+pool = get_db_pool()
+app.config["DB_POOL"] = pool
 
 init_oauth(app)
 app.register_blueprint(auth_bp)
