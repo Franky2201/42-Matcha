@@ -48,8 +48,13 @@ CORS(
 )
 
 
-pool = get_db_pool()
-app.config["DB_POOL"] = pool
+try:
+    pool = get_db_pool()
+    app.config["DB_POOL"] = pool
+except RuntimeError as e:
+    print(f"⚠️ Avertissement : Base de données non connectée ({e}).")
+except Exception as e:
+    print(f"⚠️ Avertissement : Erreur de connexion DB ({e}).")
 
 init_oauth(app)
 app.register_blueprint(auth_bp)
