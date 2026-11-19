@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { useProfile } from '../../hooks/useProfile';
+import { getImageUrl } from '../../utils/getImage';
 
 export function PhotoUploader() {
 	const { formData, updateField, errors } = useProfile();
@@ -31,7 +32,9 @@ export function PhotoUploader() {
 			<label className="mb-2 block text-sm font-semibold text-neutral-700">Photos (La 1ère est votre photo de profil)</label>
 			<div className="grid grid-cols-3 gap-3 md:grid-cols-5">
 				{formData.photos.map((photo, index) => {
-					const previewUrl = photo instanceof File ? URL.createObjectURL(photo) : photo;
+					const previewUrl = photo instanceof File
+						? URL.createObjectURL(photo)
+						: (photo ? getImageUrl(photo) : null);
 
 					return (
 						<div key={index} className="relative aspect-[3/4] overflow-hidden rounded-xl border-2 border-dashed border-white/60 bg-white/40 transition hover:bg-white/60">

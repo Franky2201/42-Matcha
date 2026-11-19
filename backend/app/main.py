@@ -6,7 +6,9 @@ from flask_cors import CORS
 from strawberry.flask.views import GraphQLView
 
 from app.core.database import GraphQLContext, get_db_pool
+from app.core.oauth import init_oauth
 from app.features.auth.resolver import AuthMutation
+from app.features.auth.rest import auth_bp
 from app.features.users.resolver import UserMutation, UserQuery
 
 origins = [
@@ -37,12 +39,25 @@ class CustomGraphQLView(GraphQLView):
 
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "default-dev-secret-key")
 
 CORS(
     app,
     resources={r"/*": {"origins": origins}},
     supports_credentials=True,
 )
+
+
+try:
+    pool = get_db_pool()
+    app.config["DB_POOL"] = pool
+except RuntimeError as e:
+    print(f"⚠️ Avertissement : Base de données non connectée ({e}).")
+except Exception as e:
+    print(f"⚠️ Avertissement : Erreur de connexion DB ({e}).")
+
+init_oauth(app)
+app.register_blueprint(auth_bp)
 
 
 @app.route("/")

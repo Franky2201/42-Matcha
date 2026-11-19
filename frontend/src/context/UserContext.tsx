@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/client/react';
 import { ME_QUERY } from '../services/user';
 import { useAuth } from '../hooks/useAuth';
 import type { CurrentUser } from '../types/ui';
+import { getImageUrl } from '../utils/getImage';
 
 interface UserContextType {
 	user: CurrentUser | null;
@@ -29,7 +30,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 		username: data.me.username,
 		email: data.me.email,
 		rating: data.me.fameRating || 0,
-		avatarUrl: data.me.photos?.[0] || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
+		avatarUrl: getImageUrl(data.me.photos[0]),
 		firstname: data.me.firstname,
 		lastname: data.me.lastname,
 		gender: data.me.gender || '',
