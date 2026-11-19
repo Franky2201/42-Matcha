@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useProfile } from '../../hooks/useProfile';
+import { Tag } from '../ui/Tag';
 
 export function TagInput() {
 	const { formData, updateField, errors } = useProfile();
@@ -23,21 +24,9 @@ export function TagInput() {
 	return (
 		<div className="w-full">
 			<label className="mb-2 block text-sm font-semibold text-neutral-700">Intérêts (Tags)</label>
-			<div className="flex flex-wrap gap-2 mb-3">
+			<div className="mb-3 flex flex-wrap gap-2">
 				{formData.tags.map((tag) => (
-					<span
-						key={tag}
-						className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-sm font-medium text-white"
-					>
-						#{tag}
-						<button
-							type="button"
-							onClick={() => removeTag(tag)}
-							className="ml-1 rounded-full p-0.5 hover:bg-white/20"
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-						</button>
-					</span>
+					<Tag key={tag} tag={tag} onRemove={removeTag} />
 				))}
 			</div>
 			<input

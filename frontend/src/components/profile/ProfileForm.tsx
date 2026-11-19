@@ -23,13 +23,24 @@ export function ProfileForm() {
 				/>
 			</div>
 
-			<Input
-				label="Adresse Email"
-				type="email"
-				value={formData.email}
-				onChange={(e) => updateField('email', e.target.value)}
-				error={errors.email}
-			/>
+			<div className="grid gap-4 md:grid-cols-2">
+				<Input
+					label="Adresse Email"
+					type="email"
+					value={formData.email}
+					onChange={(e) => updateField('email', e.target.value)}
+					error={errors.email}
+				/>
+				<Input
+					label="Âge"
+					type="number"
+					min="18"
+					max="99"
+					value={formData.age}
+					onChange={(e) => updateField('age', e.target.value ? Number(e.target.value) : '')}
+					error={errors.age}
+				/>
+			</div>
 
 			<div className="grid gap-4 md:grid-cols-2">
 				<Input
@@ -40,8 +51,7 @@ export function ProfileForm() {
 					error={errors.gender}
 					options={[
 						{ label: 'Homme', value: 'male' },
-						{ label: 'Femme', value: 'female' },
-						{ label: 'Autre', value: 'other' },
+						{ label: 'Femme', value: 'female' }
 					]}
 				/>
 				<Input
